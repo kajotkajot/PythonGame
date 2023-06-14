@@ -12,7 +12,7 @@ IDEAS:
 - another forward attack
 - hp packages dropped by enemies
 - ghost on death screen coming out of dead player body
-- hp display for individual enemies
+- window scaling
 """
 
 # window settings
@@ -305,6 +305,20 @@ class RedEnemy:
             dead_enemies.append(self)
             player.player_xp += red_enemy_xp
 
+    def display_hp(self):
+        hp_division = red_enemy_hp / (abs(self.pos.left - self.pos.right) - 10)
+        hp_bar = pygame.Surface([(self.hp / hp_division), 5])
+        hp_bar_under = pygame.Surface([abs(self.pos.left - self.pos.right) - 10, 5])
+        hp_bar.fill("red")
+        hp_bar_under.fill("black")
+        screen.blit(hp_bar_under, (self.pos.left + 5, self.pos.top - 15))
+        screen.blit(hp_bar, (self.pos.left + 5, self.pos.top - 15))
+
+    def update(self):
+        self.is_alive()
+        self.display_hp()
+        self.detect_collision()
+
 
 # green enemy class
 class GreenEnemy:
@@ -494,6 +508,20 @@ class GreenEnemy:
             dead_enemies.append(self)
             player.player_xp += green_enemy_xp
 
+    def display_hp(self):
+        hp_division = green_enemy_hp / (abs(self.pos.left - self.pos.right) - 10)
+        hp_bar = pygame.Surface([(self.hp / hp_division), 5])
+        hp_bar_under = pygame.Surface([abs(self.pos.left - self.pos.right) - 10, 5])
+        hp_bar.fill("red")
+        hp_bar_under.fill("black")
+        screen.blit(hp_bar_under, (self.pos.left + 5, self.pos.top - 15))
+        screen.blit(hp_bar, (self.pos.left + 5, self.pos.top - 15))
+
+    def update(self):
+        self.is_alive()
+        self.display_hp()
+        self.detect_collision()
+
 
 # slash attack class
 class SlashAttack:
@@ -523,7 +551,7 @@ class SlashAttack:
 
 # random enemy spawns
 def enemy_spawn():
-    cords = [[-100, randint(-60, 1080)], [1920, randint(-60, 1080)], [randint(-100, 1920), -60], [randint(-100, 1920), 1080]]
+    cords = [[-100, randint(-60, 1100)], [1920, randint(-60, 1100)], [randint(-100, 1920), -60], [randint(-100, 1920), 1100]]
     chosen_cords = random.choice(cords)
     if randint(0, 1) == 0:
         spawned_enemy = RedEnemy(chosen_cords)
@@ -645,8 +673,7 @@ while True:
 
         # show enemies on screen
         for enemy in enemies:
-            enemy.is_alive()
-            enemy.detect_collision()
+            enemy.update()
 
         # show death animation for dead enemies
         for dead_enemy in dead_enemies:
