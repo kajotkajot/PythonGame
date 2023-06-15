@@ -10,7 +10,7 @@ IDEAS:
 - different characters
 - better animation for slash attack
 - another forward attack
-- hp packages dropped by enemies
+- better hp png
 - ghost on death screen coming out of dead player body
 - window scaling
 """
@@ -30,7 +30,7 @@ player_right_scaled = pygame.transform.scale(player_right, (300, 300))
 player_left = pygame.image.load('res/player_left.png').convert()
 player_death = pygame.image.load('res/player_death.png').convert()
 player_death_scaled = pygame.transform.scale(player_death, (300, 300))
-player_hp = 10000
+player_hp = 1000
 player_xp = 0
 level = 0
 needed_player_xp = 1000
@@ -59,6 +59,12 @@ enemy_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(enemy_timer, 1000)
 enemies = []
 dead_enemies = []
+
+# hp settings
+hp_heart = pygame.image.load('res/hp_heart.png')
+hp_heart_shadow = pygame.image.load('res/hp_heart_shadow.png')
+hp_value = 100
+hp_list = []
 
 # red enemy settings
 red_enemy_hp = 100
@@ -283,6 +289,7 @@ class RedEnemy:
         self.current_death_sprite += 0.1
         if self.current_death_sprite >= len(self.red_enemy_right_death_sprites):
             dead_enemies.remove(self)
+            self.drop_hp()
         else:
             self.image = self.red_enemy_right_death_sprites[int(self.current_death_sprite)]
 
@@ -290,6 +297,7 @@ class RedEnemy:
         self.current_death_sprite += 0.1
         if self.current_death_sprite >= len(self.red_enemy_left_death_sprites):
             dead_enemies.remove(self)
+            self.drop_hp()
         else:
             self.image = self.red_enemy_left_death_sprites[int(self.current_death_sprite)]
 
@@ -298,6 +306,11 @@ class RedEnemy:
             self.right_death_animation()
         if self.current_orientation == "left":
             self.left_death_animation()
+
+    def drop_hp(self):
+        if randint(0, 9) >= 7:
+            new_hp = Hp(self.pos)
+            hp_list.append(new_hp)
 
     def is_alive(self):
         if self.hp <= 0:
@@ -466,6 +479,7 @@ class GreenEnemy:
         self.current_sprite += 0.1
         if self.current_sprite >= len(self.green_enemy_right_death_sprites):
             dead_enemies.remove(self)
+            self.drop_hp()
         else:
             self.image = self.green_enemy_right_death_sprites[int(self.current_sprite)]
 
@@ -473,6 +487,7 @@ class GreenEnemy:
         self.current_sprite += 0.1
         if self.current_sprite >= len(self.green_enemy_left_death_sprites):
             dead_enemies.remove(self)
+            self.drop_hp()
         else:
             self.image = self.green_enemy_left_death_sprites[int(self.current_sprite)]
 
@@ -501,6 +516,10 @@ class GreenEnemy:
                 self.right_blow_animation()
             if self.current_orientation == "left":
                 self.left_blow_animation()
+
+    def drop_hp(self):
+        new_hp = Hp(self.pos)
+        hp_list.append(new_hp)
 
     def is_alive(self):
         if self.hp <= 0:
@@ -544,7 +563,39 @@ class SlashAttack:
         else:
             self.image = self.animation_sprites[int(self.current_sprite)]
             self.pos = self.image.get_rect().move(player.pos.right - 150, player.pos.top - 70)
-        screen.blit(attack.image, attack.pos)
+        screen.blit(self.image, self.pos)
+
+
+# hp class
+class Hp:
+    def __init__(self, position):
+        self.image = hp_heart
+        self.value = hp_value
+        self.shadow = hp_heart_shadow
+        self.pos = position
+        self.origin = pygame.Rect.copy(self.pos)
+        self.origin.top -= 15
+        self.pos.top -= 15
+        self.time = 0
+        self.transparency = 255
+
+    def animation(self):
+        self.time += 0.06
+        y = np.sin(1.1*self.time)*2
+        self.pos.top -= y
+        self.transparency -= 3.5*y
+        self.shadow.set_alpha(self.transparency)
+        screen.blit(self.shadow, self.origin)
+        screen.blit(self.image, self.pos)
+
+    def collision(self):
+        if self.pos.colliderect(player.pos):
+            hp_list.remove(self)
+            player.player_hp += self.value
+
+    def update(self):
+        self.collision()
+        self.animation()
 
 
 # FUNCTIONS:
@@ -553,7 +604,7 @@ class SlashAttack:
 def enemy_spawn():
     cords = [[-100, randint(-60, 1100)], [1920, randint(-60, 1100)], [randint(-100, 1920), -60], [randint(-100, 1920), 1100]]
     chosen_cords = random.choice(cords)
-    if randint(0, 1) == 0:
+    if randint(0, 9) >= 3:
         spawned_enemy = RedEnemy(chosen_cords)
     else:
         spawned_enemy = GreenEnemy(chosen_cords)
@@ -569,6 +620,8 @@ def add_slash_attack():
 
 # HP definition
 def display_hp():
+    if player.player_hp >= player_hp:
+        player.player_hp = player_hp
     hp_division = player_hp / 500
     hp_bar = pygame.Surface([player.player_hp / hp_division, 35])
     hp_bar_under = pygame.Surface([500, 35])
@@ -671,6 +724,10 @@ while True:
             if keys[pygame.K_d]:
                 player.move(right=True)
 
+        # show dropped hp on screen
+        for hp in hp_list:
+            hp.update()
+
         # show enemies on screen
         for enemy in enemies:
             enemy.update()
@@ -701,7 +758,6 @@ while True:
         # show attacks
         for attack in attacks:
             attack.animation()
-
     else:
         # show pause screen
         if player.alive is True:
