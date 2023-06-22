@@ -10,9 +10,9 @@ from settings import *
 
 
 class Main:
-    def __init__(self, activation):
+    def __init__(self, running):
         self.player = Player()
-        self.game_active = activation
+        self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
 
     def run(self):

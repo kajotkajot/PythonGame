@@ -29,6 +29,7 @@ slash_attack_damage = 10
 start_button_image = pygame.Surface([300, 100])
 settings_button_image = pygame.Surface([300, 100])
 exit_button_image = pygame.Surface([300, 100])
+character_button_image = pygame.Surface([300, 300])
 game_active = False
 pygame.init()
 clock = pygame.time.Clock()
