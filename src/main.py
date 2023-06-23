@@ -7,6 +7,8 @@ from redenemy import RedEnemy
 from greenenemy import GreenEnemy
 from slashattack import SlashAttack
 from settings import *
+from button import Button
+from time import *
 
 
 class Main:
@@ -14,6 +16,12 @@ class Main:
         self.player = Player()
         self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
+        self.back_button = Button(810, 900, exit_button_image)
+        self.transparency = 255
+        attacks.clear()
+        enemies.clear()
+        dead_enemies.clear()
+        hp_list.clear()
 
     def run(self):
         # MAIN GAME LOOP:
@@ -28,7 +36,15 @@ class Main:
                             self.add_slash_attack()
                         if event.key == pygame.K_ESCAPE:
                             # creating blurred image for pause menu
+                            screen.blit(current_state_image, (0, 0))
+                            screen.blit(player_right_scaled, (810, 350))
+                            pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
+                            pause_lv_rect = pause_lv.get_rect(center=(960, 700))
+                            screen.blit(pause_lv, pause_lv_rect)
+                            screen.blit(square, (0, 0))
+                            pygame.display.update()
                             self.blurred_current_state_image = self.greyscale(current_state_image)
+                            self.transparency = 255
                             self.game_active = False
                     if event.type == enemy_timer:
                         self.enemy_spawn()
@@ -91,7 +107,8 @@ class Main:
             else:
                 # show pause screen
                 if self.player.alive is True:
-                    self.pause_screen()
+                    self.transparency -= 2
+                    self.pause_screen(self.transparency)
                 else:
                     self.death_screen()
 
@@ -143,12 +160,24 @@ class Main:
         screen.blit(xp, (1402, 25))
 
     # show pause screen
-    def pause_screen(self):
+    def pause_screen(self, transparency):
+        from menu import Menu
         screen.blit(self.blurred_current_state_image, screen_rect)
         screen.blit(player_right_scaled, (810, 350))
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
         pause_lv_rect = pause_lv.get_rect(center=(960, 700))
         screen.blit(pause_lv, pause_lv_rect)
+        if self.back_button.draw(screen):
+            menu = Menu()
+            menu.run(running=True)
+
+        if transparency > 100:
+
+            square.set_alpha(transparency)
+            screen.blit(square, (0, 0))
+        else:
+            square.set_alpha(255)
+
 
     # show death screen
     def death_screen(self):

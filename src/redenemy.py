@@ -89,7 +89,7 @@ class RedEnemy:
             self.move(player)
         for x in attacks:
             if self.pos.colliderect(x.pos):
-                self.hp -= slash_attack_damage
+                self.hp -= x.damage
         screen.blit(self.image, self.pos)
 
     def right_death_animation(self):
@@ -121,6 +121,7 @@ class RedEnemy:
 
     def is_alive(self, player):
         if self.hp <= 0:
+            self.hp = 0
             enemies.remove(self)
             dead_enemies.append(self)
             player.player_xp += red_enemy_xp

@@ -96,11 +96,20 @@ class GreenEnemy:
         self.speed = 0
         self.image = self.enemy_left_sprites[0]
 
+    def is_alive(self, player):
+        if self.hp <= 0:
+            self.hp = 0
+            if self in enemies:
+                enemies.remove(self)
+                dead_enemies.append(self)
+            player.player_xp += green_enemy_xp
+
     def detect_collision(self, player):
         if self.pos.colliderect(player.pos) and not self.speed == 0:
             player.player_hp -= green_enemy_damage
-            enemies.remove(self)
-            dead_enemies.append(self)
+            if self in enemies:
+                enemies.remove(self)
+                dead_enemies.append(self)
             self.pos.top -= 20
         if not self.pos.colliderect(player.pos):
             self.move()
@@ -189,12 +198,6 @@ class GreenEnemy:
     def drop_hp(self):
         new_hp = Hp(self.pos)
         hp_list.append(new_hp)
-
-    def is_alive(self, player):
-        if self.hp <= 0:
-            enemies.remove(self)
-            dead_enemies.append(self)
-            player.player_xp += green_enemy_xp
 
     def display_hp(self):
         hp_division = green_enemy_hp / (abs(self.pos.left - self.pos.right) - 10)

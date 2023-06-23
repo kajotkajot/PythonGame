@@ -13,7 +13,7 @@ class SlashAttack:
         self.current_sprite = 0
         self.image = self.animation_sprites[0]
         self.pos = self.image.get_rect().move(player.pos.right - 150, player.pos.top - 70)
-        self.damage = slash_attack_damage
+        self.damage = 10
 
     def animation(self, player):
         self.current_sprite += 0.5

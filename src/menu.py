@@ -1,6 +1,5 @@
 from settings import *
 from button import Button
-from main import Main
 import sys
 
 
@@ -28,7 +27,7 @@ class Menu:
                 running = False
 
             if self.exit_button.draw(screen):
-                running = False
+                sys.exit()
 
             pygame.display.update()
 
@@ -67,6 +66,7 @@ class CharacterChoiceMenu:
         self.back_button = Button(600, 800, settings_button_image)
 
     def run(self, running):
+        from main import Main
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -76,6 +76,7 @@ class CharacterChoiceMenu:
             if self.knight_button.draw(screen):
                 main = Main(running=True)
                 main.run()
+                running = False
 
             if self.character2_button.draw(screen):
                 pass

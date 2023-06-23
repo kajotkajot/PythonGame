@@ -4,7 +4,7 @@ import pygame
 WIDTH = 1920
 HEIGHT = 1080
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-screen_rect = screen.get_rect(center=(960, 540))
+screen_rect = screen.get_rect(center=(WIDTH/2, HEIGHT/2))
 pygame.display.set_caption("Hemorrhoid Fighter")
 
 # player settings
@@ -42,6 +42,8 @@ level_text = font.render('LEVEL', False, 'Black')
 death_text = bigger_font.render('YOU DIED', False, 'Black')
 death_text_rect = death_text.get_rect(center=(960, 720))
 blurred_current_state_image = pygame.image.load('res/background.png').convert()
+square = pygame.Surface([WIDTH, HEIGHT], pygame.SRCALPHA)
+square.fill((50, 50, 50, 255))
 
 # enemy settings
 enemy_timer = pygame.USEREVENT + 1
