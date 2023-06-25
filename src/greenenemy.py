@@ -2,12 +2,17 @@ from settings import *
 from hp import Hp
 
 
-# green enemy class
-class GreenEnemy:
-    def __init__(self, enemy_cords):
+class GreenEnemy(pygame.sprite.Sprite):
+    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, health_group, player):
+        super().__init__(enemy_group)
+        self.enemy_group = enemy_group
+        self.attack_group = attack_group
+        self.health_group = health_group
+        self.dead_enemy_group = dead_enemy_group
+        self.player = player
         self.speed = green_enemy_speed
         self.image = green_enemy_right
-        self.pos = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
+        self.rect = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
         self.enemy_left_sprites = []
         self.enemy_left_sprites.append(pygame.image.load('res/green_enemy_move_left1.png'))
         self.enemy_left_sprites.append(pygame.image.load('res/green_enemy_move_left2.png'))
@@ -62,30 +67,30 @@ class GreenEnemy:
         x_speed = (self.speed * self.x_range) / 3
         y_speed = (self.speed * self.y_range) / 4
         if self.current_direction == "top-left":
-            self.pos.right -= x_speed
-            self.pos.top -= y_speed
+            self.rect.right -= x_speed
+            self.rect.top -= y_speed
             self.current_orientation = "left"
         if self.current_direction == "bottom-left":
-            self.pos.right -= x_speed
-            self.pos.top += y_speed
+            self.rect.right -= x_speed
+            self.rect.top += y_speed
             self.current_orientation = "left"
         if self.current_direction == "top-right":
-            self.pos.right += x_speed
-            self.pos.top -= y_speed
+            self.rect.right += x_speed
+            self.rect.top -= y_speed
             self.current_orientation = "right"
         if self.current_direction == "bottom-right":
-            self.pos.right += x_speed
-            self.pos.top += y_speed
+            self.rect.right += x_speed
+            self.rect.top += y_speed
             self.current_orientation = "right"
         if self.current_direction == "top":
-            self.pos.top -= y_speed
+            self.rect.top -= y_speed
         if self.current_direction == "bottom":
-            self.pos.top += y_speed
+            self.rect.top += y_speed
         if self.current_direction == "left":
-            self.pos.right -= x_speed
+            self.rect.right -= x_speed
             self.current_orientation = "left"
         if self.current_direction == "right":
-            self.pos.right += x_speed
+            self.rect.right += x_speed
             self.current_orientation = "right"
 
     def stand_right(self):
@@ -96,25 +101,25 @@ class GreenEnemy:
         self.speed = 0
         self.image = self.enemy_left_sprites[0]
 
-    def is_alive(self, player):
+    def is_alive(self):
         if self.hp <= 0:
             self.hp = 0
-            if self in enemies:
-                enemies.remove(self)
-                dead_enemies.append(self)
-            player.player_xp += green_enemy_xp
+            if self in self.enemy_group:
+                self.enemy_group.remove(self)
+                self.dead_enemy_group.add(self)
+            self.player.player_xp += green_enemy_xp
 
-    def detect_collision(self, player):
-        if self.pos.colliderect(player.pos) and not self.speed == 0:
-            player.player_hp -= green_enemy_damage
-            if self in enemies:
-                enemies.remove(self)
-                dead_enemies.append(self)
-            self.pos.top -= 20
-        if not self.pos.colliderect(player.pos):
+    def detect_collision(self):
+        if self.rect.colliderect(self.player.rect) and not self.speed == 0:
+            self.player.player_hp -= green_enemy_damage
+            if self in self.enemy_group:
+                self.enemy_group.remove(self)
+                self.dead_enemy_group.add(self)
+            self.rect.top -= 20
+        if not self.rect.colliderect(self.player.rect):
             self.move()
-        for x in attacks:
-            if self.pos.colliderect(x.pos):
+        for x in self.attack_group:
+            if self.rect.colliderect(x.rect):
                 self.hp -= x.damage
         self.speed -= self.timer
         self.timer += 1.5
@@ -124,39 +129,38 @@ class GreenEnemy:
             if self.current_orientation == "left":
                 self.stand_left()
         if self.timer >= 100:
-            self.check_direction(player)
+            self.check_direction()
             self.timer = 0
-        screen.blit(self.image, self.pos)
 
-    def check_direction(self, player):
-        self.x_range = (abs(self.pos.right - player.pos.left) + abs(self.pos.left - player.pos.right)) / 2000
+    def check_direction(self):
+        self.x_range = (abs(self.rect.right - self.player.rect.left) + abs(self.rect.left - self.player.rect.right)) / 2000
         if self.x_range >= 0.6:
             self.x_range = 0.6
-        self.y_range = (abs(self.pos.top - player.pos.bottom) + abs(self.pos.bottom - player.pos.top)) / 2000
+        self.y_range = (abs(self.rect.top - self.player.rect.bottom) + abs(self.rect.bottom - self.player.rect.top)) / 2000
         if self.y_range >= 0.6:
             self.y_range = 0.6
         self.speed = green_enemy_speed
-        if self.pos.right > player.pos.right and self.pos.top > player.pos.top:
+        if self.rect.right > self.player.rect.right and self.rect.top > self.player.rect.top:
             self.current_direction = "top-left"
-        if self.pos.right > player.pos.right and self.pos.top < player.pos.top:
+        if self.rect.right > self.player.rect.right and self.rect.top < self.player.rect.top:
             self.current_direction = "bottom-left"
-        if self.pos.right < player.pos.right and self.pos.top > player.pos.top:
+        if self.rect.right < self.player.rect.right and self.rect.top > self.player.rect.top:
             self.current_direction = "top-right"
-        if self.pos.right < player.pos.right and self.pos.top < player.pos.top:
+        if self.rect.right < self.player.rect.right and self.rect.top < self.player.rect.top:
             self.current_direction = "bottom-right"
-        if self.pos.right == player.pos.right and self.pos.top > player.pos.top:
+        if self.rect.right == self.player.rect.right and self.rect.top > self.player.rect.top:
             self.current_direction = "top"
-        if self.pos.right == player.pos.right and self.pos.top < player.pos.top:
+        if self.rect.right == self.player.rect.right and self.rect.top < self.player.rect.top:
             self.current_direction = "bottom"
-        if self.pos.right > player.pos.right and self.pos.top == player.pos.top:
+        if self.rect.right > self.player.rect.right and self.rect.top == self.player.rect.top:
             self.current_direction = "left"
-        if self.pos.right < player.pos.right and self.pos.top == player.pos.top:
+        if self.rect.right < self.player.rect.right and self.rect.top == self.player.rect.top:
             self.current_direction = "right"
 
     def right_death_animation(self):
         self.current_sprite += 0.1
         if self.current_sprite >= len(self.green_enemy_right_death_sprites):
-            dead_enemies.remove(self)
+            self.kill()
             self.drop_hp()
         else:
             self.image = self.green_enemy_right_death_sprites[int(self.current_sprite)]
@@ -164,7 +168,7 @@ class GreenEnemy:
     def left_death_animation(self):
         self.current_sprite += 0.1
         if self.current_sprite >= len(self.green_enemy_left_death_sprites):
-            dead_enemies.remove(self)
+            self.kill()
             self.drop_hp()
         else:
             self.image = self.green_enemy_left_death_sprites[int(self.current_sprite)]
@@ -172,14 +176,14 @@ class GreenEnemy:
     def right_blow_animation(self):
         self.current_sprite += 0.15
         if self.current_sprite >= len(self.green_enemy_right_blow_sprites):
-            dead_enemies.remove(self)
+            self.kill()
         else:
             self.image = self.green_enemy_right_blow_sprites[int(self.current_sprite)]
 
     def left_blow_animation(self):
         self.current_sprite += 0.15
         if self.current_sprite >= len(self.green_enemy_left_blow_sprites):
-            dead_enemies.remove(self)
+            self.kill()
         else:
             self.image = self.green_enemy_left_blow_sprites[int(self.current_sprite)]
 
@@ -196,19 +200,8 @@ class GreenEnemy:
                 self.left_blow_animation()
 
     def drop_hp(self):
-        new_hp = Hp(self.pos)
-        hp_list.append(new_hp)
+        Hp(self.rect, self.health_group, self.player)
 
-    def display_hp(self):
-        hp_division = green_enemy_hp / (abs(self.pos.left - self.pos.right) - 10)
-        hp_bar = pygame.Surface([(self.hp / hp_division), 5])
-        hp_bar_under = pygame.Surface([abs(self.pos.left - self.pos.right) - 10, 5])
-        hp_bar.fill("red")
-        hp_bar_under.fill("black")
-        screen.blit(hp_bar_under, (self.pos.left + 5, self.pos.top - 15))
-        screen.blit(hp_bar, (self.pos.left + 5, self.pos.top - 15))
-
-    def update(self, player):
-        self.is_alive(player)
-        self.display_hp()
-        self.detect_collision(player)
+    def update(self):
+        self.is_alive()
+        self.detect_collision()

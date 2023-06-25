@@ -8,20 +8,27 @@ from greenenemy import GreenEnemy
 from slashattack import SlashAttack
 from settings import *
 from button import Button
-from time import *
+from spritegroups import EnemyGroup, PlayerGroup, AttacksGroup, HealthGroup, DeadEnemyGroup
 
 
 class Main:
     def __init__(self, running):
-        self.player = Player()
         self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
         self.back_button = Button(810, 900, exit_button_image)
         self.transparency = 255
-        attacks.clear()
-        enemies.clear()
-        dead_enemies.clear()
-        hp_list.clear()
+        self.clicked = False
+        self.enemy_group = EnemyGroup()
+        self.player_group = PlayerGroup()
+        self.attack_group = AttacksGroup()
+        self.health_group = HealthGroup()
+        self.dead_enemy_group = DeadEnemyGroup()
+        self.enemy_group.empty()
+        self.player_group.empty()
+        self.attack_group.empty()
+        self.health_group.empty()
+        self.dead_enemy_group.empty()
+        self.player = Player(self.player_group)
 
     def run(self):
         # MAIN GAME LOOP:
@@ -36,15 +43,7 @@ class Main:
                             self.add_slash_attack()
                         if event.key == pygame.K_ESCAPE:
                             # creating blurred image for pause menu
-                            screen.blit(current_state_image, (0, 0))
-                            screen.blit(player_right_scaled, (810, 350))
-                            pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
-                            pause_lv_rect = pause_lv.get_rect(center=(960, 700))
-                            screen.blit(pause_lv, pause_lv_rect)
-                            screen.blit(square, (0, 0))
-                            pygame.display.update()
-                            self.blurred_current_state_image = self.greyscale(current_state_image)
-                            self.transparency = 255
+                            self.pause_screen_delay()
                             self.game_active = False
                     if event.type == enemy_timer:
                         self.enemy_spawn()
@@ -53,43 +52,31 @@ class Main:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
                                 self.game_active = True
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        self.clicked = False
 
             if self.game_active is True:
                 # show background
-                screen.blit(background, (0, 0))
+                screen.fill((85, 75, 62))
 
-                # controls
-                if self.player.alive is True:
-                    keys = pygame.key.get_pressed()
-                    if keys[pygame.K_w]:
-                        self.player.move(up=True)
-                    if keys[pygame.K_s]:
-                        self.player.move(down=True)
-                    if keys[pygame.K_a]:
-                        self.player.move(left=True)
-                    if keys[pygame.K_d]:
-                        self.player.move(right=True)
-
-                # show dropped hp on screen
-                for hp in hp_list:
-                    hp.update(self.player)
-
-                # show enemies on screen
-                for enemy in enemies:
-                    enemy.update(self.player)
+                # update enemies on screen
+                self.enemy_group.update()
+                self.enemy_group.custom_draw(self.player)
 
                 # show death animation for dead enemies
-                for dead_enemy in dead_enemies:
-                    dead_enemy.death_check()
-                    screen.blit(dead_enemy.image, dead_enemy.pos)
+                self.dead_enemy_group.custom_draw(self.player)
 
-                # show player on screen
-                screen.blit(self.player.image, self.player.pos)
-                if self.player.current_orientation == "right" and self.player.alive is True:
-                    self.player.image = player_right
-                if self.player.current_orientation == "left" and self.player.alive is True:
-                    self.player.image = player_left
-                self.player.player_alive()
+                # show health hearts on screen
+                self.health_group.update()
+                self.health_group.custom_draw(self.player)
+
+                # update player on screen
+                self.player_group.update()
+                self.player_group.custom_draw(self.player)
+
+                # update attacks on screen
+                self.attack_group.update()
+                self.attack_group.custom_draw(self.player)
 
                 # saving current screen
                 pygame.Surface.blit(current_state_image, screen, screen_rect)
@@ -100,15 +87,10 @@ class Main:
                 if self.game_active is True and self.player.player_hp >= 0:
                     self.display_hp()
                     self.display_xp()
-
-                # show attacks
-                for attack in attacks:
-                    attack.update(self.player)
             else:
                 # show pause screen
                 if self.player.alive is True:
-                    self.transparency -= 2
-                    self.pause_screen(self.transparency)
+                    self.pause_screen()
                 else:
                     self.death_screen()
 
@@ -121,8 +103,7 @@ class Main:
     # adding attack to array
     def add_slash_attack(self):
         if self.player.alive is True:
-            new_attack = SlashAttack(self.player)
-            attacks.append(new_attack)
+            SlashAttack(self.player, self.attack_group)
 
     # HP definition
     def display_hp(self):
@@ -159,25 +140,35 @@ class Main:
         xp = font.render(str(self.player.player_lv), False, 'Black')
         screen.blit(xp, (1402, 25))
 
+    # for slowly showing pause screen
+    def pause_screen_delay(self):
+        screen.blit(current_state_image, (0, 0))
+        screen.blit(player_right_scaled, (810, 350))
+        pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
+        pause_lv_rect = pause_lv.get_rect(center=(960, 700))
+        screen.blit(pause_lv, pause_lv_rect)
+        screen.blit(square, (0, 0))
+        self.blurred_current_state_image = self.greyscale(current_state_image)
+        self.transparency = 255
+
     # show pause screen
-    def pause_screen(self, transparency):
+    def pause_screen(self):
         from menu import Menu
+        self.transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
         screen.blit(player_right_scaled, (810, 350))
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
         pause_lv_rect = pause_lv.get_rect(center=(960, 700))
         screen.blit(pause_lv, pause_lv_rect)
-        if self.back_button.draw(screen):
-            menu = Menu()
-            menu.run(running=True)
-
-        if transparency > 100:
-
-            square.set_alpha(transparency)
+        if self.back_button.draw(screen) and self.clicked is False:
+            menu = Menu(True)
+            menu.run(running=True, menu_state='main')
+            self.clicked = True
+        if self.transparency > 0:
+            square.set_alpha(self.transparency)
             screen.blit(square, (0, 0))
         else:
-            square.set_alpha(255)
-
+            square.set_alpha(self.transparency)
 
     # show death screen
     def death_screen(self):
@@ -189,15 +180,16 @@ class Main:
         screen.blit(death_level, death_level_rect)
 
     # random enemy spawns
-    @staticmethod
-    def enemy_spawn():
-        cords = [[-100, randint(-60, 1100)], [1920, randint(-60, 1100)], [randint(-100, 1920), -60], [randint(-100, 1920), 1100]]
+    def enemy_spawn(self):
+        cords = [[self.player.rect.left - 1310, randint(self.player.rect.top - 850, self.player.rect.bottom + 810)],
+                 [self.player.rect.right + 1210, randint(self.player.rect.top - 850, self.player.rect.bottom + 810)],
+                 [randint(self.player.rect.left - 1310, self.player.rect.right + 1210), self.player.rect.top - 850],
+                 [randint(self.player.rect.left - 1310, self.player.rect.right + 1210), self.player.rect.bottom + 810]]
         chosen_cords = random.choice(cords)
         if randint(0, 9) >= 3:
-            spawned_enemy = RedEnemy(chosen_cords)
+            RedEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.health_group, self.player)
         else:
-            spawned_enemy = GreenEnemy(chosen_cords)
-        enemies.append(spawned_enemy)
+            GreenEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.health_group, self.player)
 
     # greyscale definition
     @staticmethod

@@ -1,12 +1,12 @@
 from settings import *
 
 
-# player class
-class Player:
-    def __init__(self):
+class Player(pygame.sprite.Sprite):
+    def __init__(self, group):
+        super().__init__(group)
         self.speed = player_speed
         self.image = player_right
-        self.pos = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
+        self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
         self.player_left_sprites = []
         self.player_left_sprites.append(pygame.image.load('res/player_move_left1.png'))
         self.player_left_sprites.append(pygame.image.load('res/player_move_left2.png'))
@@ -44,33 +44,25 @@ class Player:
 
     def move(self, up=False, down=False, left=False, right=False):
         if right:
-            self.pos.right += self.speed
+            self.rect.right += self.speed
             self.current_orientation = "right"
             self.animation_right()
         if left:
-            self.pos.right -= self.speed
+            self.rect.right -= self.speed
             self.current_orientation = "left"
             self.animation_left()
         if down:
-            self.pos.top += self.speed
+            self.rect.top += self.speed
             if self.current_orientation == "right":
                 self.animation_right()
             if self.current_orientation == "left":
                 self.animation_left()
         if up:
-            self.pos.top -= self.speed
+            self.rect.top -= self.speed
             if self.current_orientation == "right":
                 self.animation_right()
             if self.current_orientation == "left":
                 self.animation_left()
-        if self.pos.right > WIDTH + PLAYER_WIDTH / 2:
-            self.pos.left = 0 - PLAYER_WIDTH / 2
-        if self.pos.top > HEIGHT + PLAYER_HEIGHT / 2:
-            self.pos.top = 0 - PLAYER_HEIGHT / 2
-        if self.pos.right < 0 - PLAYER_WIDTH / 2:
-            self.pos.right = WIDTH + PLAYER_WIDTH / 2
-        if self.pos.top < 0 - PLAYER_HEIGHT / 2:
-            self.pos.top = HEIGHT - PLAYER_HEIGHT / 2
 
     def animation_right(self):
         self.current_sprite += 0.01 * self.speed
@@ -110,3 +102,19 @@ class Player:
             self.death_animation = True
             self.death_check()
             self.alive = False
+
+    def input(self):
+        if self.alive is True:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_w]:
+                self.move(up=True)
+            if keys[pygame.K_s]:
+                self.move(down=True)
+            if keys[pygame.K_a]:
+                self.move(left=True)
+            if keys[pygame.K_d]:
+                self.move(right=True)
+
+    def update(self):
+        self.input()
+        self.player_alive()
