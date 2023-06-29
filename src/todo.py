@@ -12,8 +12,7 @@ TO DO:
 - one back button
 - arena background
 - moving arena background in menu
-- smoothly moving camera after the character in game
 - game area equal to arena background size
-- dynamic enemy resp depending on where the player is
 - stats, attacks and more about every character after being clicked in menu
+- move all the image loads to settings.py
 """

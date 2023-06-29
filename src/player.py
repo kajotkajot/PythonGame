@@ -7,6 +7,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = player_speed
         self.image = player_right
         self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
+        self.direction = pygame.math.Vector2()
         self.player_left_sprites = []
         self.player_left_sprites.append(pygame.image.load('res/player_move_left1.png'))
         self.player_left_sprites.append(pygame.image.load('res/player_move_left2.png'))
@@ -39,30 +40,38 @@ class Player(pygame.sprite.Sprite):
         self.player_hp = player_hp
         self.player_xp = player_xp
         self.player_lv = level
+        self.camera = pygame.math.Vector2(0, 0)
+        self.current_camera_position = pygame.math.Vector2(0, 0)
+        self.camera_speed = self.speed/5
+        self.camera_range = self.speed*10
         self.alive = True
         self.death_animation = False
 
     def move(self, up=False, down=False, left=False, right=False):
+        if up:
+            self.direction.y = -1
+            self.handle_camera(0, -self.camera_speed, True)
+            if self.current_orientation == "right":
+                self.animation_right()
+            if self.current_orientation == "left":
+                self.animation_left()
+        if down:
+            self.direction.y = 1
+            self.handle_camera(0, self.camera_speed, True)
+            if self.current_orientation == "right":
+                self.animation_right()
+            if self.current_orientation == "left":
+                self.animation_left()
         if right:
-            self.rect.right += self.speed
+            self.direction.x = 1
+            self.handle_camera(self.camera_speed, 0, True)
             self.current_orientation = "right"
             self.animation_right()
         if left:
-            self.rect.right -= self.speed
+            self.direction.x = -1
+            self.handle_camera(-self.camera_speed, 0, True)
             self.current_orientation = "left"
             self.animation_left()
-        if down:
-            self.rect.top += self.speed
-            if self.current_orientation == "right":
-                self.animation_right()
-            if self.current_orientation == "left":
-                self.animation_left()
-        if up:
-            self.rect.top -= self.speed
-            if self.current_orientation == "right":
-                self.animation_right()
-            if self.current_orientation == "left":
-                self.animation_left()
 
     def animation_right(self):
         self.current_sprite += 0.01 * self.speed
@@ -103,17 +112,57 @@ class Player(pygame.sprite.Sprite):
             self.death_check()
             self.alive = False
 
+    def handle_camera(self, direction_x, direction_y, movement):
+        if movement:
+            if direction_x > 0:
+                if self.camera.x < self.camera_range:
+                    self.camera.x += direction_x
+            if direction_x < 0:
+                if self.camera.x > -self.camera_range:
+                    self.camera.x += direction_x
+            if direction_y > 0:
+                if self.camera.y < self.camera_range:
+                    self.camera.y += direction_y
+            if direction_y < 0:
+                if self.camera.y > -self.camera_range:
+                    self.camera.y += direction_y
+            self.current_camera_position = self.camera
+        else:
+            if direction_x > 0:
+                self.camera.x -= abs(self.current_camera_position.x)/20
+            if direction_x < 0:
+                self.camera.x += abs(self.current_camera_position.x)/20
+            if direction_y > 0:
+                self.camera.y -= abs(self.current_camera_position.y)/20
+            if direction_y < 0:
+                self.camera.y += abs(self.current_camera_position.y)/20
+
     def input(self):
         if self.alive is True:
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_w]:
+            if keys[pygame.K_w] and keys[pygame.K_s]:
+                self.direction.y = 0
+                self.handle_camera(0, self.camera.y, False)
+            elif keys[pygame.K_w]:
                 self.move(up=True)
-            if keys[pygame.K_s]:
+            elif keys[pygame.K_s]:
                 self.move(down=True)
-            if keys[pygame.K_a]:
+            else:
+                self.direction.y = 0
+                self.handle_camera(0, self.camera.y, False)
+
+            if keys[pygame.K_a] and keys[pygame.K_d]:
+                self.direction.x = 0
+                self.handle_camera(self.camera.x, 0, False)
+            elif keys[pygame.K_a]:
                 self.move(left=True)
-            if keys[pygame.K_d]:
+            elif keys[pygame.K_d]:
                 self.move(right=True)
+            else:
+                self.direction.x = 0
+                self.handle_camera(self.camera.x, 0, False)
+
+            self.rect.center += self.direction * self.speed
 
     def update(self):
         self.input()
