@@ -1,4 +1,5 @@
 from settings import *
+from assets import *
 
 
 class PlayerGroup(pygame.sprite.GroupSingle):
@@ -8,6 +9,7 @@ class PlayerGroup(pygame.sprite.GroupSingle):
         self.offset = pygame.math.Vector2()
         self.half_width = self.display.get_size()[0] / 2
         self.half_height = self.display.get_size()[1] / 2
+        self.current_sprite = 0
 
     def center_target_camera(self, target):
         self.offset.x = target.rect.centerx - self.half_width
@@ -19,9 +21,15 @@ class PlayerGroup(pygame.sprite.GroupSingle):
             offset_pos = sprite.rect.topleft - self.offset + player.camera
             self.display.blit(sprite.image, offset_pos)
             if sprite.current_orientation == "right" and sprite.alive is True:
-                sprite.image = player_right
+                self.current_sprite += 0.05
+                if self.current_sprite >= len(sprite.player_right_stand_sprites):
+                    self.current_sprite = 0
+                sprite.image = sprite.player_right_stand_sprites[int(self.current_sprite)]
             if sprite.current_orientation == "left" and sprite.alive is True:
-                sprite.image = player_left
+                self.current_sprite += 0.05
+                if self.current_sprite >= len(sprite.player_left_stand_sprites):
+                    self.current_sprite = 0
+                sprite.image = sprite.player_left_stand_sprites[int(self.current_sprite)]
 
 
 class EnemyGroup(pygame.sprite.Group):

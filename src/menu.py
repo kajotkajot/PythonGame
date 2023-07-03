@@ -1,4 +1,5 @@
 from settings import *
+from assets import *
 from button import Button
 import sys
 
@@ -18,13 +19,15 @@ class Menu:
 
         # character choice buttons
         self.knight_button = Button(75, 75, character_button_image)
-        self.character2_button = Button(690, 75, character_button_image)
-        self.character3_button = Button(1305, 75, character_button_image)
-        self.play_button = Button(75, 905, play_button_image)
-        self.character_back_button = Button(1485, 905, back_button_image)
+        self.angel_button = Button(690, 75, character_button_image)
+        self.assassin_button = Button(1305, 75, character_button_image)
+        self.play_button = Button(1485, 905, play_button_image)
+        self.character_back_button = Button(75, 905, back_button_image)
 
         # important variables
         self.clicked = clicked
+        self.chosen_character = ''
+        self.chose_made = False
 
     def run(self, running, menu_state):
         while running:
@@ -66,17 +69,26 @@ class Menu:
                 from main import Main
                 screen.fill("blue")
                 if self.knight_button.draw(screen) and self.clicked is False:
-                    main = Main(running=True)
+                    self.chosen_character = 'Knight'
+                    self.chose_made = True
+                    self.clicked = True
+                screen.blit(knight_right_menu, (145, 135))
+
+                if self.angel_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Angel'
+                    self.chose_made = True
+                    self.clicked = True
+                screen.blit(angel_right_menu, (760, 135))
+
+                if self.assassin_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Assassin'
+                    self.chose_made = True
+                    self.clicked = True
+                screen.blit(assassin_right_menu, (1375, 135))
+
+                if self.play_button.draw(screen) and self.clicked is False and self.chose_made is True:
+                    main = Main(True, self.chosen_character)
                     main.run()
-                    self.clicked = True
-
-                if self.character2_button.draw(screen) and self.clicked is False:
-                    self.clicked = True
-
-                if self.character3_button.draw(screen) and self.clicked is False:
-                    self.clicked = True
-
-                if self.play_button.draw(screen) and self.clicked is False:
                     self.clicked = True
 
                 if self.character_back_button.draw(screen) and self.clicked is False:

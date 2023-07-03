@@ -1,4 +1,5 @@
 from settings import *
+from assets import *
 from hp import Hp
 
 
@@ -13,34 +14,12 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.speed = green_enemy_speed
         self.image = green_enemy_right
         self.rect = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
-        self.enemy_left_sprites = []
-        self.enemy_left_sprites.append(pygame.image.load('res/green_enemy_move_left1.png'))
-        self.enemy_left_sprites.append(pygame.image.load('res/green_enemy_move_left2.png'))
-        self.enemy_right_sprites = []
-        self.enemy_right_sprites.append(pygame.image.load('res/green_enemy_move_right1.png'))
-        self.enemy_right_sprites.append(pygame.image.load('res/green_enemy_move_right2.png'))
-        self.green_enemy_left_death_sprites = []
-        self.green_enemy_left_death_sprites.append(pygame.image.load('res/green_enemy_left_death1.png'))
-        self.green_enemy_left_death_sprites.append(pygame.image.load('res/green_enemy_left_death2.png'))
-        self.green_enemy_left_death_sprites.append(pygame.image.load('res/green_enemy_left_death3.png'))
-        self.green_enemy_left_death_sprites.append(pygame.image.load('res/green_enemy_left_death4.png'))
-        self.green_enemy_right_death_sprites = []
-        self.green_enemy_right_death_sprites.append(pygame.image.load('res/green_enemy_right_death1.png'))
-        self.green_enemy_right_death_sprites.append(pygame.image.load('res/green_enemy_right_death2.png'))
-        self.green_enemy_right_death_sprites.append(pygame.image.load('res/green_enemy_right_death3.png'))
-        self.green_enemy_right_death_sprites.append(pygame.image.load('res/green_enemy_right_death4.png'))
-        self.green_enemy_left_blow_sprites = []
-        self.green_enemy_left_blow_sprites.append(pygame.image.load('res/green_enemy_left_blow1.png'))
-        self.green_enemy_left_blow_sprites.append(pygame.image.load('res/green_enemy_left_blow2.png'))
-        self.green_enemy_left_blow_sprites.append(pygame.image.load('res/green_enemy_left_blow3.png'))
-        self.green_enemy_left_blow_sprites.append(pygame.image.load('res/green_enemy_left_blow4.png'))
-        self.green_enemy_left_blow_sprites.append(pygame.image.load('res/green_enemy_left_blow5.png'))
-        self.green_enemy_right_blow_sprites = []
-        self.green_enemy_right_blow_sprites.append(pygame.image.load('res/green_enemy_right_blow1.png'))
-        self.green_enemy_right_blow_sprites.append(pygame.image.load('res/green_enemy_right_blow2.png'))
-        self.green_enemy_right_blow_sprites.append(pygame.image.load('res/green_enemy_right_blow3.png'))
-        self.green_enemy_right_blow_sprites.append(pygame.image.load('res/green_enemy_right_blow4.png'))
-        self.green_enemy_right_blow_sprites.append(pygame.image.load('res/green_enemy_right_blow5.png'))
+        self.enemy_left_sprites = green_enemy_left_sprites
+        self.enemy_right_sprites = green_enemy_right_sprites
+        self.green_enemy_left_death_sprites = green_enemy_left_death_sprites
+        self.green_enemy_right_death_sprites = green_enemy_right_death_sprites
+        self.green_enemy_left_blow_sprites = green_enemy_left_blow_sprites
+        self.green_enemy_right_blow_sprites = green_enemy_right_blow_sprites
         self.current_sprite = 0
         self.current_orientation = "right"
         self.current_direction = "none"

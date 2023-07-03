@@ -1,39 +1,12 @@
 from settings import *
+from assets import *
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, group):
+    def __init__(self, group, character):
         super().__init__(group)
         self.speed = player_speed
-        self.image = player_right
-        self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
         self.direction = pygame.math.Vector2()
-        self.player_left_sprites = []
-        self.player_left_sprites.append(pygame.image.load('res/player_move_left1.png'))
-        self.player_left_sprites.append(pygame.image.load('res/player_move_left2.png'))
-        self.player_left_sprites.append(pygame.image.load('res/player_move_left3.png'))
-        self.player_left_sprites.append(pygame.image.load('res/player_move_left4.png'))
-        self.player_left_sprites.append(pygame.image.load('res/player_move_left5.png'))
-        self.player_left_sprites.append(pygame.image.load('res/player_move_left6.png'))
-        self.player_right_sprites = []
-        self.player_right_sprites.append(pygame.image.load('res/player_move_right1.png'))
-        self.player_right_sprites.append(pygame.image.load('res/player_move_right2.png'))
-        self.player_right_sprites.append(pygame.image.load('res/player_move_right3.png'))
-        self.player_right_sprites.append(pygame.image.load('res/player_move_right4.png'))
-        self.player_right_sprites.append(pygame.image.load('res/player_move_right5.png'))
-        self.player_right_sprites.append(pygame.image.load('res/player_move_right6.png'))
-        self.player_left_death_sprites = []
-        self.player_left_death_sprites.append(pygame.image.load('res/player_left_death1.png'))
-        self.player_left_death_sprites.append(pygame.image.load('res/player_left_death2.png'))
-        self.player_left_death_sprites.append(pygame.image.load('res/player_left_death3.png'))
-        self.player_left_death_sprites.append(pygame.image.load('res/player_left_death4.png'))
-        self.player_left_death_sprites.append(pygame.image.load('res/player_left_death5.png'))
-        self.player_right_death_sprites = []
-        self.player_right_death_sprites.append(pygame.image.load('res/player_right_death1.png'))
-        self.player_right_death_sprites.append(pygame.image.load('res/player_right_death2.png'))
-        self.player_right_death_sprites.append(pygame.image.load('res/player_right_death3.png'))
-        self.player_right_death_sprites.append(pygame.image.load('res/player_right_death4.png'))
-        self.player_right_death_sprites.append(pygame.image.load('res/player_right_death5.png'))
         self.current_death_sprite = 0
         self.current_sprite = 0
         self.current_orientation = "right"
@@ -46,6 +19,43 @@ class Player(pygame.sprite.Sprite):
         self.camera_range = self.speed*10
         self.alive = True
         self.death_animation = False
+        if character == 'Knight':
+            self.image = knight_right
+            self.image_right = knight_right
+            self.image_right_scaled = knight_right_scaled
+            self.image_death = knight_death
+            self.image_death_scaled = knight_death_scaled
+            self.player_left_stand_sprites = knight_left_stand_sprites
+            self.player_right_stand_sprites = knight_right_stand_sprites
+            self.player_left_sprites = knight_left_sprites
+            self.player_right_sprites = knight_right_sprites
+            self.player_left_death_sprites = knight_left_death_sprites
+            self.player_right_death_sprites = knight_right_death_sprites
+        if character == 'Angel':
+            self.image = angel_right
+            self.image_right = angel_right
+            self.image_right_scaled = angel_right_scaled
+            self.image_death = angel_death
+            self.image_death_scaled = angel_death_scaled
+            self.player_left_stand_sprites = angel_left_stand_sprites
+            self.player_right_stand_sprites = angel_right_stand_sprites
+            self.player_left_sprites = angel_left_sprites
+            self.player_right_sprites = angel_right_sprites
+            self.player_left_death_sprites = angel_left_death_sprites
+            self.player_right_death_sprites = angel_right_death_sprites
+        if character == 'Assassin':
+            self.image = assassin_right
+            self.image_right = assassin_right
+            self.image_right_scaled = assassin_right_scaled
+            self.image_death = assassin_death
+            self.image_death_scaled = assassin_death_scaled
+            self.player_left_stand_sprites = assassin_left_stand_sprites
+            self.player_right_stand_sprites = assassin_right_stand_sprites
+            self.player_left_sprites = assassin_left_sprites
+            self.player_right_sprites = assassin_right_sprites
+            self.player_left_death_sprites = assassin_left_death_sprites
+            self.player_right_death_sprites = assassin_right_death_sprites
+        self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
 
     def move(self, up=False, down=False, left=False, right=False):
         if up:

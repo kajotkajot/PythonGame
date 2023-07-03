@@ -1,7 +1,11 @@
 """
 TO DO:
+Kajot & Rzepa:
 - special settings tab in-menu to change resolution
-- different characters
+- moving arena background in menu
+- game area equal to arena background size
+- stats, attacks and more about every character after being clicked in menu
+Zajda:
 - better animation for slash attack
 - another forward attack
 - better hp png
@@ -11,8 +15,4 @@ TO DO:
 - one empty button to fill with characters images
 - one back button
 - arena background
-- moving arena background in menu
-- game area equal to arena background size
-- stats, attacks and more about every character after being clicked in menu
-- move all the image loads to settings.py
 """

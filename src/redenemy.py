@@ -1,4 +1,5 @@
 from settings import *
+from assets import *
 from random import randint
 from hp import Hp
 
@@ -14,22 +15,10 @@ class RedEnemy(pygame.sprite.Sprite):
         self.speed = red_enemy_speed
         self.image = red_enemy_right
         self.rect = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
-        self.enemy_left_sprites = []
-        self.enemy_left_sprites.append(pygame.image.load('res/enemy_move_left1.png'))
-        self.enemy_left_sprites.append(pygame.image.load('res/enemy_move_left2.png'))
-        self.enemy_right_sprites = []
-        self.enemy_right_sprites.append(pygame.image.load('res/enemy_move_right1.png'))
-        self.enemy_right_sprites.append(pygame.image.load('res/enemy_move_right2.png'))
-        self.red_enemy_left_death_sprites = []
-        self.red_enemy_left_death_sprites.append(pygame.image.load('res/red_enemy_left_death1.png'))
-        self.red_enemy_left_death_sprites.append(pygame.image.load('res/red_enemy_left_death2.png'))
-        self.red_enemy_left_death_sprites.append(pygame.image.load('res/red_enemy_left_death3.png'))
-        self.red_enemy_left_death_sprites.append(pygame.image.load('res/red_enemy_left_death4.png'))
-        self.red_enemy_right_death_sprites = []
-        self.red_enemy_right_death_sprites.append(pygame.image.load('res/red_enemy_right_death1.png'))
-        self.red_enemy_right_death_sprites.append(pygame.image.load('res/red_enemy_right_death2.png'))
-        self.red_enemy_right_death_sprites.append(pygame.image.load('res/red_enemy_right_death3.png'))
-        self.red_enemy_right_death_sprites.append(pygame.image.load('res/red_enemy_right_death4.png'))
+        self.enemy_left_sprites = red_enemy_left_sprites
+        self.enemy_right_sprites = red_enemy_right_sprites
+        self.red_enemy_left_death_sprites = red_enemy_left_death_sprites
+        self.red_enemy_right_death_sprites = red_enemy_right_death_sprites
         self.current_death_sprite = 0
         self.current_sprite = 0
         self.current_orientation = "right"

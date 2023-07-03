@@ -1,4 +1,5 @@
 from settings import *
+from assets import *
 import numpy as np
 
 

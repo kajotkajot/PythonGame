@@ -7,12 +7,13 @@ from redenemy import RedEnemy
 from greenenemy import GreenEnemy
 from slashattack import SlashAttack
 from settings import *
+from assets import *
 from button import Button
 from spritegroups import EnemyGroup, PlayerGroup, AttacksGroup, HealthGroup, DeadEnemyGroup
 
 
 class Main:
-    def __init__(self, running):
+    def __init__(self, running, character):
         self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
         self.back_button = Button(810, 900, exit_button_image)
@@ -28,7 +29,7 @@ class Main:
         self.attack_group.empty()
         self.health_group.empty()
         self.dead_enemy_group.empty()
-        self.player = Player(self.player_group)
+        self.player = Player(self.player_group, character)
 
     def run(self):
         # MAIN GAME LOOP:
@@ -143,7 +144,7 @@ class Main:
     # for slowly showing pause screen
     def pause_screen_delay(self):
         screen.blit(current_state_image, (0, 0))
-        screen.blit(player_right_scaled, (810, 350))
+        screen.blit(self.player.image_right_scaled, (810, 350))
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
         pause_lv_rect = pause_lv.get_rect(center=(960, 700))
         screen.blit(pause_lv, pause_lv_rect)
@@ -156,7 +157,7 @@ class Main:
         from menu import Menu
         self.transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        screen.blit(player_right_scaled, (810, 350))
+        screen.blit(self.player.image_right_scaled, (810, 350))
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
         pause_lv_rect = pause_lv.get_rect(center=(960, 700))
         screen.blit(pause_lv, pause_lv_rect)
@@ -173,7 +174,7 @@ class Main:
     # show death screen
     def death_screen(self):
         screen.fill("grey")
-        screen.blit(player_death_scaled, (810, 350))
+        screen.blit(self.player.image_death_scaled, (810, 350))
         screen.blit(death_text, death_text_rect)
         death_level = font.render(f'Level:{self.player.player_lv}', False, 'Black')
         death_level_rect = death_level.get_rect(center=(960, 800))
