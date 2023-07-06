@@ -3,6 +3,8 @@ import pygame
 # game assets
 current_state_image = pygame.image.load('res/background.png').convert_alpha()
 blurred_current_state_image = pygame.image.load('res/background.png').convert_alpha()
+ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
+                 pygame.image.load('res/ghost2.png').convert_alpha()]
 
 # knight assets
 knight_right = pygame.image.load('res/knight_stand_right1.png').convert_alpha()
@@ -103,6 +105,63 @@ assassin_right_stand_sprites = [pygame.image.load('res/assassin_stand_right1.png
                                 pygame.image.load('res/assassin_stand_right3.png').convert_alpha(),
                                 pygame.image.load('res/assassin_stand_right4.png').convert_alpha()]
 
+# mage assets
+mage_right = pygame.image.load('res/mage_stand_right1.png').convert_alpha()
+mage_right_scaled = pygame.transform.scale(mage_right, (300, 300))
+mage_right_menu = pygame.transform.scale(mage_right, (400, 400))
+mage_death = pygame.image.load('res/mage_death.png').convert_alpha()
+mage_death_scaled = pygame.transform.scale(mage_death, (300, 300))
+mage_left_sprites = [pygame.image.load('res/mage_move_left1.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left2.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left3.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left4.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left5.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left6.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left7.png').convert_alpha(),
+                     pygame.image.load('res/mage_move_left8.png').convert_alpha()]
+mage_right_sprites = [pygame.image.load('res/mage_move_right1.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right2.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right3.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right4.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right5.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right6.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right7.png').convert_alpha(),
+                      pygame.image.load('res/mage_move_right8.png').convert_alpha()]
+mage_left_death_sprites = [pygame.image.load('res/mage_death_left1.png').convert_alpha(),
+                           pygame.image.load('res/mage_death_left2.png').convert_alpha(),
+                           pygame.image.load('res/mage_death_left3.png').convert_alpha(),
+                           pygame.image.load('res/mage_death_left4.png').convert_alpha(),
+                           pygame.image.load('res/mage_death_left5.png').convert_alpha()]
+mage_right_death_sprites = [pygame.image.load('res/mage_death_right1.png').convert_alpha(),
+                            pygame.image.load('res/mage_death_right2.png').convert_alpha(),
+                            pygame.image.load('res/mage_death_right3.png').convert_alpha(),
+                            pygame.image.load('res/mage_death_right4.png').convert_alpha(),
+                            pygame.image.load('res/mage_death_right5.png').convert_alpha()]
+mage_left_stand_sprites = [pygame.image.load('res/mage_stand_left1.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left2.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left3.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left4.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left5.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left6.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left7.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left8.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left9.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left10.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left11.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left12.png').convert_alpha()]
+mage_right_stand_sprites = [pygame.image.load('res/mage_stand_right1.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right2.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right3.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right4.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right5.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right6.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right7.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right8.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right9.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right10.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right11.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right12.png').convert_alpha()]
+
 # red enemy assets
 red_enemy_right = pygame.image.load('res/red_enemy_move_right1.png').convert_alpha()
 red_enemy_left = pygame.image.load('res/red_enemy_move_left1.png').convert_alpha()
@@ -157,10 +216,13 @@ hp_heart = pygame.image.load('res/hp_heart.png').convert_alpha()
 hp_heart_shadow = pygame.image.load('res/hp_heart_shadow.png').convert_alpha()
 
 # buttons assets
-start_button_image = pygame.Surface([750, 100])
-settings_button_image = pygame.Surface([750, 100])
-credits_button = pygame.Surface([360, 100])
-exit_button_image = pygame.Surface([360, 100])
-character_button_image = pygame.Surface([540, 540])
-play_button_image = pygame.Surface([360, 100])
-back_button_image = pygame.Surface([360, 100])
+button_750x100_image = pygame.image.load('res/button_750x100_image_default.png').convert_alpha()
+button_750x100_image_pressed = pygame.image.load('res/button_750x100_image_active.png').convert_alpha()
+button_360x100_image = pygame.image.load('res/button_360x100_image_default.png').convert_alpha()
+button_360x100_image_pressed = pygame.image.load('res/button_360x100_image_active.png').convert_alpha()
+button_540x540_image = pygame.image.load('res/button_540x540_image_default.png').convert_alpha()
+button_540x540_image_pressed = pygame.image.load('res/button_540x540_image_active.png').convert_alpha()
+button_arrow_image_right = pygame.image.load('res/button_arrow_image_default_right.png').convert_alpha()
+button_arrow_image_right_pressed = pygame.image.load('res/button_arrow_image_active_right.png').convert_alpha()
+button_arrow_image_left = pygame.image.load('res/button_arrow_image_default_left.png').convert_alpha()
+button_arrow_image_left_pressed = pygame.image.load('res/button_arrow_image_active_left.png').convert_alpha()

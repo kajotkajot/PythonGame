@@ -1,28 +1,38 @@
+import sys
 from settings import *
 from assets import *
 from button import Button
-import sys
 
 
 class Menu:
     def __init__(self, clicked):
         # main menu buttons
-        self.start_button = Button(585, 650, start_button_image)
-        self.settings_button = Button(585, 780, settings_button_image)
-        self.credits_button = Button(585, 910, credits_button)
-        self.exit_button = Button(975, 910, exit_button_image)
+        self.start_button = Button('START', 585, 650, button_750x100_image, button_750x100_image_pressed)
+        self.settings_button = Button('SETTINGS', 585, 780, button_750x100_image, button_750x100_image_pressed)
+        self.credits_button = Button('CREDITS', 585, 910, button_360x100_image, button_360x100_image_pressed)
+        self.exit_button = Button('EXIT', 975, 910, button_360x100_image, button_360x100_image_pressed)
 
         # settings buttons
-        self.resolution1280x720_button = Button(585, 650, settings_button_image)
-        self.resolution1920x1080_button = Button(585, 780, settings_button_image)
-        self.settings_back_button = Button(585, 910, settings_button_image)
+        self.resolution1920x1080_button = Button('1920x1080', 585, 650, button_750x100_image, button_750x100_image_pressed)
+        self.resolution1280x720_button = Button('1280x720', 585, 780, button_750x100_image, button_750x100_image_pressed)
+        self.settings_back_button = Button('BACK', 585, 910, button_750x100_image, button_750x100_image_pressed)
 
         # character choice buttons
-        self.knight_button = Button(75, 75, character_button_image)
-        self.angel_button = Button(690, 75, character_button_image)
-        self.assassin_button = Button(1305, 75, character_button_image)
-        self.play_button = Button(1485, 905, play_button_image)
-        self.character_back_button = Button(75, 905, back_button_image)
+        self.knight_button = Button('', 75, 75, button_540x540_image, button_540x540_image_pressed)
+        self.angel_button = Button('', 690, 75, button_540x540_image, button_540x540_image_pressed)
+        self.assassin_button = Button('', 1305, 75, button_540x540_image, button_540x540_image_pressed)
+        self.mage_button = Button('', 1920, 75, button_540x540_image, button_540x540_image_pressed)
+        self.character5_button = Button('', 2535, 75, button_540x540_image, button_540x540_image_pressed)
+        self.character6_button = Button('', 3150, 75, button_540x540_image, button_540x540_image_pressed)
+        self.play_button = Button('PLAY', 1485, 905, button_360x100_image, button_360x100_image_pressed)
+        self.character_back_button = Button('BACK', 75, 905, button_360x100_image, button_360x100_image_pressed)
+        self.left_arrow_button = Button('', 75, 635, button_arrow_image_left, button_arrow_image_left_pressed)
+        self.right_arrow_button = Button('', 1745, 635, button_arrow_image_right, button_arrow_image_right_pressed)
+
+        # buttons settings
+        self.character_button_list = [self.knight_button, self.angel_button, self.assassin_button, self.mage_button, self.character5_button, self.character6_button]
+        self.characters_image_positions = [145, 760, 1375, 1990, 2605, 3220]
+        self.character_menu_position = 0
 
         # important variables
         self.clicked = clicked
@@ -36,9 +46,17 @@ class Menu:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.clicked = False
+                if event.type == pygame.KEYDOWN:
+                    if menu_state == 'character_choice':
+                        if event.key == pygame.K_d:
+                            self.character_menu_position += 1
+                            self.character_choice('right')
+                        if event.key == pygame.K_a:
+                            self.character_menu_position -= 1
+                            self.character_choice('left')
 
             if menu_state == 'main':
-                screen.fill("orange")
+                screen.fill((85, 75, 62))
                 if self.start_button.draw(screen) and self.clicked is False:
                     menu_state = 'character_choice'
                     self.clicked = True
@@ -54,7 +72,7 @@ class Menu:
                     sys.exit()
 
             if menu_state == 'settings':
-                screen.fill("grey")
+                screen.fill((85, 75, 62))
                 if self.resolution1280x720_button.draw(screen) and self.clicked is False:
                     self.clicked = True
 
@@ -67,24 +85,54 @@ class Menu:
 
             if menu_state == 'character_choice':
                 from main import Main
-                screen.fill("blue")
+                screen.fill((85, 75, 62))
                 if self.knight_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Knight'
                     self.chose_made = True
                     self.clicked = True
-                screen.blit(knight_right_menu, (145, 135))
+                screen.blit(knight_right_menu, (self.characters_image_positions[0], 135))
 
                 if self.angel_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Angel'
                     self.chose_made = True
                     self.clicked = True
-                screen.blit(angel_right_menu, (760, 135))
+                screen.blit(angel_right_menu, (self.characters_image_positions[1], 135))
 
                 if self.assassin_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Assassin'
                     self.chose_made = True
                     self.clicked = True
-                screen.blit(assassin_right_menu, (1375, 135))
+                screen.blit(assassin_right_menu, (self.characters_image_positions[2], 135))
+
+                if self.mage_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Mage'
+                    self.chose_made = True
+                    self.clicked = True
+                screen.blit(mage_right_menu, (self.characters_image_positions[3], 135))
+
+                if self.character5_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Angel'
+                    self.chose_made = True
+                    self.clicked = True
+                screen.blit(angel_right_menu, (self.characters_image_positions[4], 135))
+
+                if self.character6_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Knight'
+                    self.chose_made = True
+                    self.clicked = True
+                screen.blit(knight_right_menu, (self.characters_image_positions[5], 135))
+
+                if self.character_menu_position > 0:
+                    if self.left_arrow_button.draw(screen) and self.clicked is False:
+                        self.character_menu_position -= 1
+                        self.character_choice('left')
+                        self.clicked = True
+
+                if self.character_menu_position < len(self.characters_image_positions) - 3:
+                    if self.right_arrow_button.draw(screen) and self.clicked is False:
+                        self.character_menu_position += 1
+                        self.character_choice('right')
+                        self.clicked = True
 
                 if self.play_button.draw(screen) and self.clicked is False and self.chose_made is True:
                     main = Main(True, self.chosen_character)
@@ -93,9 +141,25 @@ class Menu:
 
                 if self.character_back_button.draw(screen) and self.clicked is False:
                     menu_state = 'main'
+                    self.chose_made = False
                     self.clicked = True
 
             pygame.display.update()
+
+    def character_choice(self, direction):
+        if self.character_menu_position < 0:
+            self.character_menu_position = 0
+        elif self.character_menu_position > len(self.characters_image_positions) - 3:
+            self.character_menu_position = len(self.characters_image_positions) - 3
+        else:
+            if direction == 'left':
+                self.characters_image_positions = [position + 615 for position in self.characters_image_positions]
+                for button in self.character_button_list:
+                    button.rect.x += 615
+            if direction == 'right':
+                self.characters_image_positions = [position - 615 for position in self.characters_image_positions]
+                for button in self.character_button_list:
+                    button.rect.x -= 615
 
 
 if __name__ == '__main__':

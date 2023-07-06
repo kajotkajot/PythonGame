@@ -1,3 +1,4 @@
+import numpy as np
 from settings import *
 from assets import *
 
@@ -17,6 +18,10 @@ class Player(pygame.sprite.Sprite):
         self.current_camera_position = pygame.math.Vector2(0, 0)
         self.camera_speed = self.speed/5
         self.camera_range = self.speed*10
+        self.ghost_timer = 0
+        self.ghost_transparency = 0
+        self.ghost_current_sprite = 0
+        self.ghost_image = ghost_sprites[0]
         self.alive = True
         self.death_animation = False
         if character == 'Knight':
@@ -55,6 +60,18 @@ class Player(pygame.sprite.Sprite):
             self.player_right_sprites = assassin_right_sprites
             self.player_left_death_sprites = assassin_left_death_sprites
             self.player_right_death_sprites = assassin_right_death_sprites
+        if character == 'Mage':
+            self.image = mage_right
+            self.image_right = mage_right
+            self.image_right_scaled = mage_right_scaled
+            self.image_death = mage_death
+            self.image_death_scaled = mage_death_scaled
+            self.player_left_stand_sprites = mage_left_stand_sprites
+            self.player_right_stand_sprites = mage_right_stand_sprites
+            self.player_left_sprites = mage_left_sprites
+            self.player_right_sprites = mage_right_sprites
+            self.player_left_death_sprites = mage_left_death_sprites
+            self.player_right_death_sprites = mage_right_death_sprites
         self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
 
     def move(self, up=False, down=False, left=False, right=False):
@@ -97,23 +114,34 @@ class Player(pygame.sprite.Sprite):
 
     def right_death_animation(self):
         self.current_death_sprite += 0.1
-        if self.current_death_sprite >= len(self.player_right_death_sprites) + 5:
+        if self.current_death_sprite >= len(self.player_right_death_sprites) + 8:
             self.death_animation = False
         if self.current_death_sprite <= len(self.player_right_death_sprites):
             self.image = self.player_right_death_sprites[int(self.current_death_sprite)]
 
     def left_death_animation(self):
         self.current_death_sprite += 0.1
-        if self.current_death_sprite >= len(self.player_left_death_sprites) + 5:
+        if self.current_death_sprite >= len(self.player_left_death_sprites) + 8:
             self.death_animation = False
         if self.current_death_sprite <= len(self.player_left_death_sprites):
             self.image = self.player_left_death_sprites[int(self.current_death_sprite)]
 
+    def ghost_animation(self):
+        self.ghost_current_sprite += 0.05
+        if self.ghost_current_sprite >= len(ghost_sprites):
+            self.ghost_current_sprite = 0
+        self.ghost_image = ghost_sprites[int(self.ghost_current_sprite)]
+        self.ghost_timer += 0.04
+        self.ghost_transparency = np.sin(self.ghost_timer * 0.7) * 255
+        self.ghost_image.set_alpha(self.ghost_transparency)
+
     def death_check(self):
         if self.current_orientation == "right":
             self.right_death_animation()
+            self.ghost_animation()
         if self.current_orientation == "left":
             self.left_death_animation()
+            self.ghost_animation()
 
     def player_alive(self):
         if self.player_hp <= 0:
@@ -160,7 +188,6 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.y = 0
                 self.handle_camera(0, self.camera.y, False)
-
             if keys[pygame.K_a] and keys[pygame.K_d]:
                 self.direction.x = 0
                 self.handle_camera(self.camera.x, 0, False)
@@ -171,7 +198,6 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.x = 0
                 self.handle_camera(self.camera.x, 0, False)
-
             self.rect.center += self.direction * self.speed
 
     def update(self):

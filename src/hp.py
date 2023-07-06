@@ -12,8 +12,10 @@ class Hp(pygame.sprite.Sprite):
         self.shadow = hp_heart_shadow
         self.rect = position
         self.origin = pygame.Rect.copy(self.rect)
-        self.origin.top -= 15
-        self.rect.top -= 15
+        self.origin.x -= 15
+        self.origin.y -= 35
+        self.rect.x -= 15
+        self.rect.y -= 35
         self.time = 0
         self.transparency = 255
 

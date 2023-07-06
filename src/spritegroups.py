@@ -7,6 +7,7 @@ class PlayerGroup(pygame.sprite.GroupSingle):
         super().__init__()
         self.display = pygame.display.get_surface()
         self.offset = pygame.math.Vector2()
+        self.ghost_offset_pos = pygame.math.Vector2()
         self.half_width = self.display.get_size()[0] / 2
         self.half_height = self.display.get_size()[1] / 2
         self.current_sprite = 0
@@ -19,6 +20,12 @@ class PlayerGroup(pygame.sprite.GroupSingle):
         self.center_target_camera(player)
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset + player.camera
+            if sprite.alive and sprite.death_animation is False:
+                self.ghost_offset_pos.x = offset_pos.x
+                self.ghost_offset_pos.y = offset_pos.y
+            if sprite.alive is False and sprite.death_animation:
+                self.ghost_offset_pos.y -= 1
+                self.display.blit(sprite.ghost_image, self.ghost_offset_pos)
             self.display.blit(sprite.image, offset_pos)
             if sprite.current_orientation == "right" and sprite.alive is True:
                 self.current_sprite += 0.05

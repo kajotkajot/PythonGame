@@ -16,8 +16,8 @@ class Main:
     def __init__(self, running, character):
         self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
-        self.back_button = Button(810, 900, exit_button_image)
-        self.transparency = 255
+        self.back_button = Button('MENU', 780, 900, button_360x100_image, button_360x100_image_pressed)
+        self.pause_screen_transparency = 255
         self.clicked = False
         self.enemy_group = EnemyGroup()
         self.player_group = PlayerGroup()
@@ -148,14 +148,14 @@ class Main:
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
         pause_lv_rect = pause_lv.get_rect(center=(960, 700))
         screen.blit(pause_lv, pause_lv_rect)
-        screen.blit(square, (0, 0))
+        screen.blit(grey_pause_screen, (0, 0))
         self.blurred_current_state_image = self.greyscale(current_state_image)
-        self.transparency = 255
+        self.pause_screen_transparency = 255
 
     # show pause screen
     def pause_screen(self):
         from menu import Menu
-        self.transparency -= 2
+        self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
         screen.blit(self.player.image_right_scaled, (810, 350))
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
@@ -165,20 +165,25 @@ class Main:
             menu = Menu(True)
             menu.run(running=True, menu_state='main')
             self.clicked = True
-        if self.transparency > 0:
-            square.set_alpha(self.transparency)
-            screen.blit(square, (0, 0))
+        if self.pause_screen_transparency > 0:
+            grey_pause_screen.set_alpha(self.pause_screen_transparency)
+            screen.blit(grey_pause_screen, (0, 0))
         else:
-            square.set_alpha(self.transparency)
+            grey_pause_screen.set_alpha(self.pause_screen_transparency)
 
     # show death screen
     def death_screen(self):
+        from menu import Menu
         screen.fill("grey")
-        screen.blit(self.player.image_death_scaled, (810, 350))
         screen.blit(death_text, death_text_rect)
         death_level = font.render(f'Level:{self.player.player_lv}', False, 'Black')
         death_level_rect = death_level.get_rect(center=(960, 800))
         screen.blit(death_level, death_level_rect)
+        screen.blit(self.player.image_death_scaled, (810, 350))
+        if self.back_button.draw(screen) and self.clicked is False:
+            menu = Menu(True)
+            menu.run(running=True, menu_state='main')
+            self.clicked = True
 
     # random enemy spawns
     def enemy_spawn(self):
