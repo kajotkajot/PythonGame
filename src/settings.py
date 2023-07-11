@@ -15,22 +15,24 @@ font = pygame.font.Font("res/font.ttf", 35)
 bigger_font = pygame.font.Font("res/font.ttf", 65)
 menu_font = pygame.font.Font("res/font.ttf", 60)
 hp_text = font.render('HP', False, 'Black')
-level_text = font.render('LEVEL', False, 'Black')
+xp_text = font.render('LEVEL', False, 'Black')
 death_text = bigger_font.render('YOU DIED', False, 'Black')
 death_text_rect = death_text.get_rect(center=(960, 720))
 grey_pause_screen = pygame.Surface([WIDTH, HEIGHT], pygame.SRCALPHA)
 grey_pause_screen.fill((50, 50, 50, 255))
+pygame.mouse.set_visible(False)
 
 # player settings
 PLAYER_HEIGHT = 100
 PLAYER_WIDTH = 100
-player_hp = 1000
+player_hp = 10000
 player_xp = 0
-level = 0
+level = 1
 needed_player_xp = 1000
 player_speed = 10
+player_gold = 0
 
-# hp settings
+# item settings
 hp_value = 100
 
 # enemy settings

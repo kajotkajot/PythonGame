@@ -1,14 +1,16 @@
 from settings import *
 from assets import *
+from random import randint
 from hp import Hp
+from gold import Gold
 
 
 class GreenEnemy(pygame.sprite.Sprite):
-    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, health_group, player):
+    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, item_group, player):
         super().__init__(enemy_group)
         self.enemy_group = enemy_group
         self.attack_group = attack_group
-        self.health_group = health_group
+        self.item_group = item_group
         self.dead_enemy_group = dead_enemy_group
         self.player = player
         self.speed = green_enemy_speed
@@ -140,7 +142,7 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.current_sprite += 0.1
         if self.current_sprite >= len(self.green_enemy_right_death_sprites):
             self.kill()
-            self.drop_hp()
+            self.drop_loot()
         else:
             self.image = self.green_enemy_right_death_sprites[int(self.current_sprite)]
 
@@ -148,7 +150,7 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.current_sprite += 0.1
         if self.current_sprite >= len(self.green_enemy_left_death_sprites):
             self.kill()
-            self.drop_hp()
+            self.drop_loot()
         else:
             self.image = self.green_enemy_left_death_sprites[int(self.current_sprite)]
 
@@ -178,8 +180,11 @@ class GreenEnemy(pygame.sprite.Sprite):
             if self.current_orientation == "left":
                 self.left_blow_animation()
 
-    def drop_hp(self):
-        Hp(self.rect, self.health_group, self.player)
+    def drop_loot(self):
+        if randint(0, 9) >= 7:
+            Hp(self.rect, self.item_group, self.player)
+        else:
+            Gold(self.rect, self.item_group, self.player, randint(50, 100))
 
     def update(self):
         self.is_alive()

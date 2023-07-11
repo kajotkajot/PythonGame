@@ -22,16 +22,18 @@ class Menu:
         self.angel_button = Button('', 690, 75, button_540x540_image, button_540x540_image_pressed)
         self.assassin_button = Button('', 1305, 75, button_540x540_image, button_540x540_image_pressed)
         self.mage_button = Button('', 1920, 75, button_540x540_image, button_540x540_image_pressed)
-        self.character5_button = Button('', 2535, 75, button_540x540_image, button_540x540_image_pressed)
-        self.character6_button = Button('', 3150, 75, button_540x540_image, button_540x540_image_pressed)
-        self.play_button = Button('PLAY', 1485, 905, button_360x100_image, button_360x100_image_pressed)
-        self.character_back_button = Button('BACK', 75, 905, button_360x100_image, button_360x100_image_pressed)
+        self.necromancer_button = Button('', 2535, 75, button_540x540_image, button_540x540_image_pressed)
+        self.swordsman_button = Button('', 3150, 75, button_540x540_image, button_540x540_image_pressed)
         self.left_arrow_button = Button('', 75, 635, button_arrow_image_left, button_arrow_image_left_pressed)
         self.right_arrow_button = Button('', 1745, 635, button_arrow_image_right, button_arrow_image_right_pressed)
+        self.play_button = Button('PLAY', 1485, 905, button_360x100_image, button_360x100_image_pressed)
+        self.character_back_button = Button('BACK', 75, 905, button_360x100_image, button_360x100_image_pressed)
 
         # buttons settings
-        self.character_button_list = [self.knight_button, self.angel_button, self.assassin_button, self.mage_button, self.character5_button, self.character6_button]
+        self.character_button_list = [self.knight_button, self.angel_button, self.assassin_button, self.mage_button, self.necromancer_button, self.swordsman_button]
+        self.characters_image_origin_positions = [145, 760, 1375, 1990, 2605, 3220]
         self.characters_image_positions = [145, 760, 1375, 1990, 2605, 3220]
+        self.characters_buttons_positions = [75, 690, 1305, 1920, 2535, 3150]
         self.character_menu_position = 0
 
         # important variables
@@ -88,39 +90,57 @@ class Menu:
                 screen.fill((85, 75, 62))
                 if self.knight_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Knight'
+                    for button in self.character_button_list:
+                        button.image_not_pressed = button.saved_image_not_pressed
+                    self.knight_button.image_not_pressed = self.knight_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
                 screen.blit(knight_right_menu, (self.characters_image_positions[0], 135))
 
                 if self.angel_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Angel'
+                    for button in self.character_button_list:
+                        button.image_not_pressed = button.saved_image_not_pressed
+                    self.angel_button.image_not_pressed = self.angel_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
                 screen.blit(angel_right_menu, (self.characters_image_positions[1], 135))
 
                 if self.assassin_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Assassin'
+                    for button in self.character_button_list:
+                        button.image_not_pressed = button.saved_image_not_pressed
+                    self.assassin_button.image_not_pressed = self.assassin_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
                 screen.blit(assassin_right_menu, (self.characters_image_positions[2], 135))
 
                 if self.mage_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Mage'
+                    for button in self.character_button_list:
+                        button.image_not_pressed = button.saved_image_not_pressed
+                    self.mage_button.image_not_pressed = self.mage_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
                 screen.blit(mage_right_menu, (self.characters_image_positions[3], 135))
 
-                if self.character5_button.draw(screen) and self.clicked is False:
-                    self.chosen_character = 'Angel'
+                if self.necromancer_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Necromancer'
+                    for button in self.character_button_list:
+                        button.image_not_pressed = button.saved_image_not_pressed
+                    self.necromancer_button.image_not_pressed = self.necromancer_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
-                screen.blit(angel_right_menu, (self.characters_image_positions[4], 135))
+                screen.blit(necromancer_right_menu, (self.characters_image_positions[4], 135))
 
-                if self.character6_button.draw(screen) and self.clicked is False:
-                    self.chosen_character = 'Knight'
+                if self.swordsman_button.draw(screen) and self.clicked is False:
+                    self.chosen_character = 'Swordsman'
+                    for button in self.character_button_list:
+                        button.image_not_pressed = button.saved_image_not_pressed
+                    self.swordsman_button.image_not_pressed = self.swordsman_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
-                screen.blit(knight_right_menu, (self.characters_image_positions[5], 135))
+                screen.blit(swordsman_right_menu, (self.characters_image_positions[5], 135))
 
                 if self.character_menu_position > 0:
                     if self.left_arrow_button.draw(screen) and self.clicked is False:
@@ -141,8 +161,17 @@ class Menu:
 
                 if self.character_back_button.draw(screen) and self.clicked is False:
                     menu_state = 'main'
+                    self.character_menu_position = 0
+                    self.characters_image_positions = self.characters_image_origin_positions
+                    for button, x in zip(self.character_button_list, range(6)):
+                        button.image_not_pressed = button.saved_image_not_pressed
+                        button.rect.x = self.characters_buttons_positions[x]
                     self.chose_made = False
                     self.clicked = True
+
+            # show custom cursor on screen
+            mouse_pos = pygame.mouse.get_pos()
+            screen.blit(cursor, mouse_pos)
 
             pygame.display.update()
 

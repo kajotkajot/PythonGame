@@ -7,9 +7,10 @@ class Hp(pygame.sprite.Sprite):
     def __init__(self, position, group, player):
         super().__init__(group)
         self.player = player
+        self.max_player_hp = player_hp
         self.image = hp_heart
         self.value = hp_value
-        self.shadow = hp_heart_shadow
+        self.shadow = item_shadow
         self.rect = position
         self.origin = pygame.Rect.copy(self.rect)
         self.origin.x -= 15
@@ -18,6 +19,7 @@ class Hp(pygame.sprite.Sprite):
         self.rect.y -= 35
         self.time = 0
         self.transparency = 255
+        self.attracted = False
 
     def animation(self):
         self.time += 0.06
@@ -27,7 +29,7 @@ class Hp(pygame.sprite.Sprite):
         self.shadow.set_alpha(self.transparency)
 
     def collision(self):
-        if self.rect.colliderect(self.player.rect):
+        if self.rect.colliderect(self.player.rect) and self.player.player_hp < self.max_player_hp and self.player.alive:
             self.kill()
             self.player.player_hp += self.value
 

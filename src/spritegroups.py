@@ -28,12 +28,12 @@ class PlayerGroup(pygame.sprite.GroupSingle):
                 self.display.blit(sprite.ghost_image, self.ghost_offset_pos)
             self.display.blit(sprite.image, offset_pos)
             if sprite.current_orientation == "right" and sprite.alive is True:
-                self.current_sprite += 0.05
+                self.current_sprite += sprite.animation_timer
                 if self.current_sprite >= len(sprite.player_right_stand_sprites):
                     self.current_sprite = 0
                 sprite.image = sprite.player_right_stand_sprites[int(self.current_sprite)]
             if sprite.current_orientation == "left" and sprite.alive is True:
-                self.current_sprite += 0.05
+                self.current_sprite += sprite.animation_timer
                 if self.current_sprite >= len(sprite.player_left_stand_sprites):
                     self.current_sprite = 0
                 sprite.image = sprite.player_left_stand_sprites[int(self.current_sprite)]
@@ -104,7 +104,7 @@ class AttacksGroup(pygame.sprite.Group):
             self.display.blit(sprite.image, offset_pos)
 
 
-class HealthGroup(pygame.sprite.Group):
+class ItemGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
         self.display = pygame.display.get_surface()
@@ -121,5 +121,6 @@ class HealthGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset + player.camera
             shadow_offset_pos = sprite.origin.topleft - self.offset + player.camera
-            self.display.blit(sprite.shadow, shadow_offset_pos)
+            if sprite.attracted is False:
+                self.display.blit(sprite.shadow, shadow_offset_pos)
             self.display.blit(sprite.image, offset_pos)

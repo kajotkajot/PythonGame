@@ -14,6 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.player_hp = player_hp
         self.player_xp = player_xp
         self.player_lv = level
+        self.player_gold = player_gold
         self.camera = pygame.math.Vector2(0, 0)
         self.current_camera_position = pygame.math.Vector2(0, 0)
         self.camera_speed = self.speed/5
@@ -24,6 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.ghost_image = ghost_sprites[0]
         self.alive = True
         self.death_animation = False
+        self.skill_points = 0
+        self.basic_attack_cooldown = 1000
         if character == 'Knight':
             self.image = knight_right
             self.image_right = knight_right
@@ -36,6 +39,8 @@ class Player(pygame.sprite.Sprite):
             self.player_right_sprites = knight_right_sprites
             self.player_left_death_sprites = knight_left_death_sprites
             self.player_right_death_sprites = knight_right_death_sprites
+            self.animation_timer = 0.05
+            self.basic_attack_icon = knight_basic_attack_icon
         if character == 'Angel':
             self.image = angel_right
             self.image_right = angel_right
@@ -48,6 +53,8 @@ class Player(pygame.sprite.Sprite):
             self.player_right_sprites = angel_right_sprites
             self.player_left_death_sprites = angel_left_death_sprites
             self.player_right_death_sprites = angel_right_death_sprites
+            self.animation_timer = 0.1
+            self.basic_attack_icon = swordsman_basic_attack_icon
         if character == 'Assassin':
             self.image = assassin_right
             self.image_right = assassin_right
@@ -60,6 +67,8 @@ class Player(pygame.sprite.Sprite):
             self.player_right_sprites = assassin_right_sprites
             self.player_left_death_sprites = assassin_left_death_sprites
             self.player_right_death_sprites = assassin_right_death_sprites
+            self.animation_timer = 0.1
+            self.basic_attack_icon = swordsman_basic_attack_icon
         if character == 'Mage':
             self.image = mage_right
             self.image_right = mage_right
@@ -72,6 +81,36 @@ class Player(pygame.sprite.Sprite):
             self.player_right_sprites = mage_right_sprites
             self.player_left_death_sprites = mage_left_death_sprites
             self.player_right_death_sprites = mage_right_death_sprites
+            self.animation_timer = 0.15
+            self.basic_attack_icon = swordsman_basic_attack_icon
+        if character == 'Necromancer':
+            self.image = necromancer_right
+            self.image_right = necromancer_right
+            self.image_right_scaled = necromancer_right_scaled
+            self.image_death = necromancer_death
+            self.image_death_scaled = necromancer_death_scaled
+            self.player_left_stand_sprites = necromancer_left_stand_sprites
+            self.player_right_stand_sprites = necromancer_right_stand_sprites
+            self.player_left_sprites = necromancer_left_sprites
+            self.player_right_sprites = necromancer_right_sprites
+            self.player_left_death_sprites = necromancer_left_death_sprites
+            self.player_right_death_sprites = necromancer_right_death_sprites
+            self.animation_timer = 0.1
+            self.basic_attack_icon = swordsman_basic_attack_icon
+        if character == 'Swordsman':
+            self.image = swordsman_right
+            self.image_right = swordsman_right
+            self.image_right_scaled = swordsman_right_scaled
+            self.image_death = swordsman_death
+            self.image_death_scaled = swordsman_death_scaled
+            self.player_left_stand_sprites = swordsman_left_stand_sprites
+            self.player_right_stand_sprites = swordsman_right_stand_sprites
+            self.player_left_sprites = swordsman_left_sprites
+            self.player_right_sprites = swordsman_right_sprites
+            self.player_left_death_sprites = swordsman_left_death_sprites
+            self.player_right_death_sprites = swordsman_right_death_sprites
+            self.animation_timer = 0.1
+            self.basic_attack_icon = swordsman_basic_attack_icon
         self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
 
     def move(self, up=False, down=False, left=False, right=False):
@@ -176,7 +215,7 @@ class Player(pygame.sprite.Sprite):
                 self.camera.y += abs(self.current_camera_position.y)/20
 
     def input(self):
-        if self.alive is True:
+        if self.alive:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_w] and keys[pygame.K_s]:
                 self.direction.y = 0

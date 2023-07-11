@@ -5,6 +5,8 @@ from settings import menu_font
 class Button:
     def __init__(self, text, x, y, image, image_pressed):
         self.current_image = image
+        self.saved_image_not_pressed = image
+        self.saved_image_pressed = image_pressed
         self.image_not_pressed = image
         self.image_pressed = image_pressed
         self.text = menu_font.render(text, False, 'Black')

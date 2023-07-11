@@ -3,6 +3,7 @@ import pygame
 # game assets
 current_state_image = pygame.image.load('res/background.png').convert_alpha()
 blurred_current_state_image = pygame.image.load('res/background.png').convert_alpha()
+cursor = pygame.transform.scale(pygame.image.load('res/cursor.png').convert_alpha(), (48, 48))
 ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
                  pygame.image.load('res/ghost2.png').convert_alpha()]
 
@@ -162,6 +163,88 @@ mage_right_stand_sprites = [pygame.image.load('res/mage_stand_right1.png').conve
                             pygame.image.load('res/mage_stand_right11.png').convert_alpha(),
                             pygame.image.load('res/mage_stand_right12.png').convert_alpha()]
 
+# necromancer assets
+necromancer_right = pygame.image.load('res/necromancer_stand_right1.png').convert_alpha()
+necromancer_right_scaled = pygame.transform.scale(necromancer_right, (300, 300))
+necromancer_right_menu = pygame.transform.scale(necromancer_right, (400, 400))
+necromancer_death = pygame.image.load('res/necromancer_death.png').convert_alpha()
+necromancer_death_scaled = pygame.transform.scale(necromancer_death, (300, 300))
+necromancer_left_sprites = [pygame.image.load('res/necromancer_move_left1.png').convert_alpha(),
+                            pygame.image.load('res/necromancer_move_left2.png').convert_alpha(),
+                            pygame.image.load('res/necromancer_move_left3.png').convert_alpha(),
+                            pygame.image.load('res/necromancer_move_left4.png').convert_alpha()]
+necromancer_right_sprites = [pygame.image.load('res/necromancer_move_right1.png').convert_alpha(),
+                             pygame.image.load('res/necromancer_move_right2.png').convert_alpha(),
+                             pygame.image.load('res/necromancer_move_right3.png').convert_alpha(),
+                             pygame.image.load('res/necromancer_move_right4.png').convert_alpha()]
+necromancer_left_death_sprites = [pygame.image.load('res/necromancer_death_left1.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_death_left2.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_death_left3.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_death_left4.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_death_left5.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_death_left6.png').convert_alpha()]
+necromancer_right_death_sprites = [pygame.image.load('res/necromancer_death_right1.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_death_right2.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_death_right3.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_death_right4.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_death_right5.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_death_right6.png').convert_alpha()]
+necromancer_left_stand_sprites = [pygame.image.load('res/necromancer_stand_left1.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_stand_left2.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_stand_left3.png').convert_alpha(),
+                                  pygame.image.load('res/necromancer_stand_left4.png').convert_alpha()]
+necromancer_right_stand_sprites = [pygame.image.load('res/necromancer_stand_right1.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_stand_right2.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_stand_right3.png').convert_alpha(),
+                                   pygame.image.load('res/necromancer_stand_right4.png').convert_alpha()]
+
+# swordsman assets
+swordsman_right = pygame.image.load('res/swordsman_stand_right1.png').convert_alpha()
+swordsman_right_scaled = pygame.transform.scale(swordsman_right, (300, 300))
+swordsman_right_menu = pygame.transform.scale(swordsman_right, (400, 400))
+swordsman_death = pygame.image.load('res/swordsman_death.png').convert_alpha()
+swordsman_death_scaled = pygame.transform.scale(swordsman_death, (300, 300))
+swordsman_left_sprites = [pygame.image.load('res/swordsman_move_left1.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left2.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left3.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left4.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left5.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left6.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left7.png').convert_alpha(),
+                          pygame.image.load('res/swordsman_move_left8.png').convert_alpha()]
+swordsman_right_sprites = [pygame.image.load('res/swordsman_move_right1.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right2.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right3.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right4.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right5.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right6.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right7.png').convert_alpha(),
+                           pygame.image.load('res/swordsman_move_right8.png').convert_alpha()]
+swordsman_left_death_sprites = [pygame.image.load('res/swordsman_death_left1.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left2.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left3.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left4.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left5.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left6.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left7.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_death_left8.png').convert_alpha()]
+swordsman_right_death_sprites = [pygame.image.load('res/swordsman_death_right1.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right2.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right3.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right4.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right5.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right6.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right7.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_death_right8.png').convert_alpha()]
+swordsman_left_stand_sprites = [pygame.image.load('res/swordsman_stand_left1.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_stand_left2.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_stand_left3.png').convert_alpha(),
+                                pygame.image.load('res/swordsman_stand_left4.png').convert_alpha()]
+swordsman_right_stand_sprites = [pygame.image.load('res/swordsman_stand_right1.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_stand_right2.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_stand_right3.png').convert_alpha(),
+                                 pygame.image.load('res/swordsman_stand_right4.png').convert_alpha()]
+
 # red enemy assets
 red_enemy_right = pygame.image.load('res/red_enemy_move_right1.png').convert_alpha()
 red_enemy_left = pygame.image.load('res/red_enemy_move_left1.png').convert_alpha()
@@ -177,6 +260,11 @@ red_enemy_right_death_sprites = [pygame.image.load('res/red_enemy_death_right1.p
                                  pygame.image.load('res/red_enemy_death_right2.png').convert_alpha(),
                                  pygame.image.load('res/red_enemy_death_right3.png').convert_alpha(),
                                  pygame.image.load('res/red_enemy_death_right4.png').convert_alpha()]
+red_enemy_left_attack_sprites = [pygame.image.load('res/red_enemy_attack_left1.png').convert_alpha(),
+                                 pygame.image.load('res/red_enemy_attack_left2.png').convert_alpha()]
+red_enemy_right_attack_sprites = [pygame.image.load('res/red_enemy_attack_right1.png').convert_alpha(),
+                                  pygame.image.load('res/red_enemy_attack_right2.png').convert_alpha()]
+
 
 # green enemy assets
 green_enemy_right = pygame.image.load('res/green_enemy_move_right1.png').convert_alpha()
@@ -204,16 +292,29 @@ green_enemy_right_blow_sprites = [pygame.image.load('res/green_enemy_blow_right1
                                   pygame.image.load('res/green_enemy_blow_right4.png').convert_alpha(),
                                   pygame.image.load('res/green_enemy_blow_right5.png').convert_alpha()]
 
-# slash attack assets
-slash_attack_animation_sprites = [pygame.image.load('res/slash_attack_animation1.png').convert_alpha(),
-                                  pygame.image.load('res/slash_attack_animation2.png').convert_alpha(),
-                                  pygame.image.load('res/slash_attack_animation3.png').convert_alpha(),
-                                  pygame.image.load('res/slash_attack_animation4.png').convert_alpha(),
-                                  pygame.image.load('res/slash_attack_animation5.png').convert_alpha()]
+# knight basic attack assets
+knight_basic_attack_icon = pygame.image.load('res/knight_basic_attack_icon.png').convert_alpha()
 
-# hp assets
+# angel basic attack assets
+
+# assassin basic attack assets
+
+# mage basic attack assets
+
+# necromancer basic attack assets
+
+# swordsman basic attack assets
+swordsman_basic_attack_icon = pygame.image.load('res/swordsman_basic_attack_icon.png').convert_alpha()
+swordsman_basic_attack_animation_sprites = [pygame.image.load('res/swordsman_basic_attack_animation1.png').convert_alpha(),
+                                            pygame.image.load('res/swordsman_basic_attack_animation2.png').convert_alpha(),
+                                            pygame.image.load('res/swordsman_basic_attack_animation3.png').convert_alpha(),
+                                            pygame.image.load('res/swordsman_basic_attack_animation4.png').convert_alpha(),
+                                            pygame.image.load('res/swordsman_basic_attack_animation5.png').convert_alpha()]
+
+# item assets
 hp_heart = pygame.image.load('res/hp_heart.png').convert_alpha()
-hp_heart_shadow = pygame.image.load('res/hp_heart_shadow.png').convert_alpha()
+gold = pygame.image.load('res/gold.png').convert_alpha()
+item_shadow = pygame.image.load('res/item_shadow.png').convert_alpha()
 
 # buttons assets
 button_750x100_image = pygame.image.load('res/button_750x100_image_default.png').convert_alpha()

@@ -5,11 +5,11 @@ from random import randint
 from player import Player
 from redenemy import RedEnemy
 from greenenemy import GreenEnemy
-from slashattack import SlashAttack
+from swordsmanbasicattack import SwordsmanBasicAttack
 from settings import *
 from assets import *
 from button import Button
-from spritegroups import EnemyGroup, PlayerGroup, AttacksGroup, HealthGroup, DeadEnemyGroup
+from spritegroups import EnemyGroup, PlayerGroup, AttacksGroup, ItemGroup, DeadEnemyGroup
 
 
 class Main:
@@ -17,19 +17,27 @@ class Main:
         self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
         self.back_button = Button('MENU', 780, 900, button_360x100_image, button_360x100_image_pressed)
+        self.skill_button = Button('SKILLS', 780, 900, button_360x100_image, button_360x100_image_pressed)
+        self.skill_announcement_timer = 0
+        self.skill_announcement_transparency = 255
+        self.player_lv = 0
+        self.pop_up_active = False
         self.pause_screen_transparency = 255
         self.clicked = False
         self.enemy_group = EnemyGroup()
         self.player_group = PlayerGroup()
         self.attack_group = AttacksGroup()
-        self.health_group = HealthGroup()
+        self.item_group = ItemGroup()
         self.dead_enemy_group = DeadEnemyGroup()
         self.enemy_group.empty()
         self.player_group.empty()
         self.attack_group.empty()
-        self.health_group.empty()
+        self.item_group.empty()
         self.dead_enemy_group.empty()
         self.player = Player(self.player_group, character)
+        self.current_time = 0
+        self.basic_attack_timer = 0
+        self.basic_attack_cooldown = self.player.basic_attack_cooldown
 
     def run(self):
         # MAIN GAME LOOP:
@@ -38,10 +46,11 @@ class Main:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-                if self.game_active is True:
+                if self.game_active:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_SPACE:
-                            self.add_slash_attack()
+                            if self.current_time - self.basic_attack_timer > self.basic_attack_cooldown:
+                                self.add_basic_attack()
                         if event.key == pygame.K_ESCAPE:
                             # creating blurred image for pause menu
                             self.pause_screen_delay()
@@ -49,7 +58,7 @@ class Main:
                     if event.type == enemy_timer:
                         self.enemy_spawn()
                 else:
-                    if self.player.alive is True:
+                    if self.player.alive:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
                                 self.game_active = True
@@ -60,6 +69,9 @@ class Main:
                 # show background
                 screen.fill((85, 75, 62))
 
+                # save current ticks
+                self.current_time = pygame.time.get_ticks()
+
                 # update enemies on screen
                 self.enemy_group.update()
                 self.enemy_group.custom_draw(self.player)
@@ -67,9 +79,9 @@ class Main:
                 # show death animation for dead enemies
                 self.dead_enemy_group.custom_draw(self.player)
 
-                # show health hearts on screen
-                self.health_group.update()
-                self.health_group.custom_draw(self.player)
+                # show items on screen
+                self.item_group.update()
+                self.item_group.custom_draw(self.player)
 
                 # update player on screen
                 self.player_group.update()
@@ -85,15 +97,27 @@ class Main:
                 # show hp and xp on the screen
                 if self.player.death_animation is False and self.player.alive is False:
                     self.game_active = False
-                if self.game_active is True and self.player.player_hp >= 0:
+                if self.game_active and self.player.player_hp >= 0:
                     self.display_hp()
                     self.display_xp()
+                    self.display_skills()
+                if self.player.player_lv % 5 == 0 and self.pop_up_active is False:
+                    self.player.skill_points += 1
+                    self.skill_announcement_timer = pygame.time.get_ticks()
+                    self.player_lv = self.player.player_lv
+                    self.pop_up_active = True
+                if self.pop_up_active:
+                    self.display_level_up()
             else:
                 # show pause screen
-                if self.player.alive is True:
+                if self.player.alive:
                     self.pause_screen()
                 else:
                     self.death_screen()
+
+                # show custom cursor on screen
+                mouse_pos = pygame.mouse.get_pos()
+                screen.blit(cursor, mouse_pos)
 
             # update and clock
             pygame.display.update()
@@ -101,10 +125,28 @@ class Main:
 
     # FUNCTIONS:
 
-    # adding attack to array
-    def add_slash_attack(self):
-        if self.player.alive is True:
-            SlashAttack(self.player, self.attack_group)
+    # adding attack to sprite group
+    def add_basic_attack(self):
+        if self.player.alive:
+            self.basic_attack_timer = pygame.time.get_ticks()
+            SwordsmanBasicAttack(self.player, self.attack_group)
+
+    # display level up announcement
+    def display_level_up(self):
+        if self.current_time - self.skill_announcement_timer < 5000:
+            level_text = bigger_font.render("LEVEL " + str(self.player_lv), False, 'Black')
+            skill_text = font.render(str(self.player.skill_points) + " SKILL POINT TO USE", False, 'Black')
+            level_text_width = level_text.get_width()/2
+            skill_text_width = skill_text.get_width()/2
+            level_text.set_alpha(self.skill_announcement_transparency)
+            skill_text.set_alpha(self.skill_announcement_transparency)
+            self.skill_announcement_transparency -= 1
+            screen.blit(level_text, (WIDTH/2-level_text_width, 10))
+            screen.blit(skill_text, (WIDTH/2-skill_text_width, 80))
+        else:
+            if self.player.player_lv % 5 != 0:
+                self.skill_announcement_transparency = 255
+                self.pop_up_active = False
 
     # HP definition
     def display_hp(self):
@@ -137,9 +179,22 @@ class Main:
         screen.blit(xp_bar_border, (1390, 20))
         screen.blit(xp_bar_under, (1395, 25))
         screen.blit(xp_bar, (1395, 25))
-        screen.blit(level_text, (1785, 25))
+        screen.blit(xp_text, (1785, 25))
         xp = font.render(str(self.player.player_lv), False, 'Black')
         screen.blit(xp, (1402, 25))
+
+    # skills definition
+    def display_skills(self):
+        skill1_border = pygame.Surface([110, 110])
+        skill1_border.fill("black")
+        screen.blit(skill1_border, (20, 950))
+        screen.blit(self.player.basic_attack_icon, (25, 955))
+        if self.current_time - self.basic_attack_timer < self.basic_attack_cooldown:
+            skill_division = self.current_time - self.basic_attack_timer
+            skill1_loading = pygame.Surface([100 - (skill_division/10), 100])
+            skill1_loading.fill((30, 30, 30, 255))
+            skill1_loading.set_alpha(100)
+            screen.blit(skill1_loading, (25, 955))
 
     # for slowly showing pause screen
     def pause_screen_delay(self):
@@ -193,9 +248,9 @@ class Main:
                  [randint(self.player.rect.left - 1310, self.player.rect.right + 1210), self.player.rect.bottom + 810]]
         chosen_cords = random.choice(cords)
         if randint(0, 9) >= 3:
-            RedEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.health_group, self.player)
+            RedEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player)
         else:
-            GreenEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.health_group, self.player)
+            GreenEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player)
 
     # greyscale definition
     @staticmethod

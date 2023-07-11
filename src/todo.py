@@ -5,16 +5,21 @@ Kajot & Rzepa:
 - moving arena background in menu
 - game area equal to arena background size
 - stats, attacks and more about every character after being clicked in menu
-- green enemy poisoning player
+- enemy poisoning player
 - changing color of hp bar to green when poisoned by an enemy
-- add 2 more characters
-- animation timers for individual characters
-- fix character menu buttons
+- fix walking animation when moving diagonally
+- show player gold on screen
+- collisions between enemies and player
+- fix mage stand assets
+- add minimap on both screen and pause screen
+- use masks for collisions (?)
+- use boids algorythm for enemies (?)
+- use polygon on skill display
+- fix attack animation for red enemy
+- add basic attack to every character
 Zajda:
-- better animation for slash attack
-- animation for forward attack
 - arena background
 - fix mage move assets
-- new cursor
 - stats, skills, progression ideas
+- boss assets
 """
