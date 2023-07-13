@@ -1,3 +1,4 @@
+import math
 from settings import *
 from assets import *
 
@@ -51,9 +52,36 @@ class EnemyGroup(pygame.sprite.Group):
         self.offset.x = target.rect.centerx - self.half_width
         self.offset.y = target.rect.centery - self.half_height
 
+    @staticmethod
+    def handle_enemy_collision(sprite, other_sprite):
+        dx = other_sprite.rect.centerx - sprite.rect.centerx
+        dy = other_sprite.rect.centery - sprite.rect.centery
+        distance = math.hypot(dx, dy)
+        if distance != 0:
+            dx /= distance*20
+            dy /= distance*20
+        relative_velocity_x = other_sprite.speed * dx - sprite.speed * dx
+        relative_velocity_y = other_sprite.speed * dy - sprite.speed * dy
+        bounce_factor = 0.0005
+        impulse_magnitude = bounce_factor * (-(1 + sprite.restitution) * relative_velocity_x * relative_velocity_y) / (sprite.mass + other_sprite.mass)
+        sprite.speed -= impulse_magnitude * sprite.mass * dx
+        sprite.rect.x += dx * sprite.speed
+        sprite.rect.y += dy * sprite.speed
+        other_sprite.speed += impulse_magnitude * other_sprite.mass * dx
+        other_sprite.rect.x += dx * other_sprite.speed
+        other_sprite.rect.y += dy * other_sprite.speed
+
     def custom_draw(self, player):
         self.center_target_camera(player)
         for sprite in self.sprites():
+            dx = sprite.rect.centerx - player.rect.centerx
+            dy = sprite.rect.centery - player.rect.centery
+            distance = math.hypot(dx, dy)
+            sorted_enemies = sorted(self.sprites(), key=lambda sprites: distance)
+            for other_sprite in sorted_enemies:
+                if other_sprite != sprite:
+                    if sprite.hit_box.colliderect(other_sprite.hit_box):
+                        self.handle_enemy_collision(sprite, other_sprite)
             hp_division = red_enemy_hp / (abs(sprite.rect.left - sprite.rect.right) - 10)
             hp_bar = pygame.Surface([(sprite.hp / hp_division), 5])
             hp_bar_under = pygame.Surface([abs(sprite.rect.left - sprite.rect.right) - 10, 5])

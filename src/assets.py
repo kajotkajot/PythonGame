@@ -3,6 +3,7 @@ import pygame
 # game assets
 current_state_image = pygame.image.load('res/background.png').convert_alpha()
 blurred_current_state_image = pygame.image.load('res/background.png').convert_alpha()
+arena_background = pygame.image.load('res/arena_background.png').convert_alpha()
 cursor = pygame.transform.scale(pygame.image.load('res/cursor.png').convert_alpha(), (48, 48))
 ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
                  pygame.image.load('res/ghost2.png').convert_alpha()]
@@ -149,7 +150,9 @@ mage_left_stand_sprites = [pygame.image.load('res/mage_stand_left1.png').convert
                            pygame.image.load('res/mage_stand_left9.png').convert_alpha(),
                            pygame.image.load('res/mage_stand_left10.png').convert_alpha(),
                            pygame.image.load('res/mage_stand_left11.png').convert_alpha(),
-                           pygame.image.load('res/mage_stand_left12.png').convert_alpha()]
+                           pygame.image.load('res/mage_stand_left12.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left13.png').convert_alpha(),
+                           pygame.image.load('res/mage_stand_left14.png').convert_alpha()]
 mage_right_stand_sprites = [pygame.image.load('res/mage_stand_right1.png').convert_alpha(),
                             pygame.image.load('res/mage_stand_right2.png').convert_alpha(),
                             pygame.image.load('res/mage_stand_right3.png').convert_alpha(),
@@ -161,7 +164,9 @@ mage_right_stand_sprites = [pygame.image.load('res/mage_stand_right1.png').conve
                             pygame.image.load('res/mage_stand_right9.png').convert_alpha(),
                             pygame.image.load('res/mage_stand_right10.png').convert_alpha(),
                             pygame.image.load('res/mage_stand_right11.png').convert_alpha(),
-                            pygame.image.load('res/mage_stand_right12.png').convert_alpha()]
+                            pygame.image.load('res/mage_stand_right12.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right13.png').convert_alpha(),
+                            pygame.image.load('res/mage_stand_right14.png').convert_alpha()]
 
 # necromancer assets
 necromancer_right = pygame.image.load('res/necromancer_stand_right1.png').convert_alpha()
@@ -261,9 +266,13 @@ red_enemy_right_death_sprites = [pygame.image.load('res/red_enemy_death_right1.p
                                  pygame.image.load('res/red_enemy_death_right3.png').convert_alpha(),
                                  pygame.image.load('res/red_enemy_death_right4.png').convert_alpha()]
 red_enemy_left_attack_sprites = [pygame.image.load('res/red_enemy_attack_left1.png').convert_alpha(),
-                                 pygame.image.load('res/red_enemy_attack_left2.png').convert_alpha()]
+                                 pygame.image.load('res/red_enemy_attack_left2.png').convert_alpha(),
+                                 pygame.image.load('res/red_enemy_attack_left3.png').convert_alpha(),
+                                 pygame.image.load('res/red_enemy_attack_left4.png').convert_alpha()]
 red_enemy_right_attack_sprites = [pygame.image.load('res/red_enemy_attack_right1.png').convert_alpha(),
-                                  pygame.image.load('res/red_enemy_attack_right2.png').convert_alpha()]
+                                  pygame.image.load('res/red_enemy_attack_right2.png').convert_alpha(),
+                                  pygame.image.load('res/red_enemy_attack_right3.png').convert_alpha(),
+                                  pygame.image.load('res/red_enemy_attack_right4.png').convert_alpha()]
 
 
 # green enemy assets
@@ -292,18 +301,34 @@ green_enemy_right_blow_sprites = [pygame.image.load('res/green_enemy_blow_right1
                                   pygame.image.load('res/green_enemy_blow_right4.png').convert_alpha(),
                                   pygame.image.load('res/green_enemy_blow_right5.png').convert_alpha()]
 
-# knight basic attack assets
+# knight skills assets
 knight_basic_attack_icon = pygame.image.load('res/knight_basic_attack_icon.png').convert_alpha()
 
-# angel basic attack assets
+# angel skills assets
+angel_basic_attack_icon = pygame.image.load('res/angel_basic_attack_icon.png').convert_alpha()
+tree_angel_skill1_icon = pygame.transform.scale(pygame.image.load('res/angel_skill1_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill2_icon = pygame.transform.scale(pygame.image.load('res/angel_skill2_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill3_icon = pygame.transform.scale(pygame.image.load('res/angel_skill3_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill4_icon = pygame.transform.scale(pygame.image.load('res/angel_skill4_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill5_icon = pygame.transform.scale(pygame.image.load('res/angel_skill5_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill6_icon = pygame.transform.scale(pygame.image.load('res/angel_skill6_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill7_icon = pygame.transform.scale(pygame.image.load('res/angel_skill7_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill8_icon = pygame.transform.scale(pygame.image.load('res/angel_skill8_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill9_icon = pygame.transform.scale(pygame.image.load('res/angel_skill9_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill10_icon = pygame.transform.scale(pygame.image.load('res/angel_skill10_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill11_icon = pygame.transform.scale(pygame.image.load('res/angel_skill11_icon.png').convert_alpha(), (200, 200))
+tree_angel_skill12_icon = pygame.transform.scale(pygame.image.load('res/angel_skill12_icon.png').convert_alpha(), (200, 200))
 
-# assassin basic attack assets
+# assassin skills assets
+assassin_basic_attack_icon = pygame.image.load('res/assassin_basic_attack_icon.png').convert_alpha()
 
-# mage basic attack assets
+# mage skills assets
+mage_basic_attack_icon = pygame.image.load('res/mage_basic_attack_icon.png').convert_alpha()
 
-# necromancer basic attack assets
+# necromancer skills assets
+necromancer_basic_attack_icon = pygame.image.load('res/necromancer_basic_attack_icon.png').convert_alpha()
 
-# swordsman basic attack assets
+# swordsman skills assets
 swordsman_basic_attack_icon = pygame.image.load('res/swordsman_basic_attack_icon.png').convert_alpha()
 swordsman_basic_attack_animation_sprites = [pygame.image.load('res/swordsman_basic_attack_animation1.png').convert_alpha(),
                                             pygame.image.load('res/swordsman_basic_attack_animation2.png').convert_alpha(),
@@ -314,6 +339,8 @@ swordsman_basic_attack_animation_sprites = [pygame.image.load('res/swordsman_bas
 # item assets
 hp_heart = pygame.image.load('res/hp_heart.png').convert_alpha()
 gold = pygame.image.load('res/gold.png').convert_alpha()
+armor = pygame.image.load('res/armor.png').convert_alpha()
+attack_damage = pygame.image.load('res/attack_damage.png').convert_alpha()
 item_shadow = pygame.image.load('res/item_shadow.png').convert_alpha()
 
 # buttons assets

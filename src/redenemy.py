@@ -1,8 +1,11 @@
+import math
 from settings import *
 from assets import *
 from random import randint
 from hp import Hp
 from gold import Gold
+from armor import Armor
+from attackdamage import AttackDamage
 
 
 class RedEnemy(pygame.sprite.Sprite):
@@ -26,6 +29,9 @@ class RedEnemy(pygame.sprite.Sprite):
         self.current_sprite = 0
         self.current_orientation = "right"
         self.hp = red_enemy_hp
+        self.hit_box = self.rect
+        self.mass = 1
+        self.restitution = 0.8
 
     def move(self):
         if self.current_orientation == "right":
@@ -48,35 +54,27 @@ class RedEnemy(pygame.sprite.Sprite):
         self.move_def()
 
     def move_def(self):
-        x_range = (abs(self.rect.right - self.player.rect.left) + abs(self.rect.left - self.player.rect.right)) / 10000
-        y_range = (abs(self.rect.top - self.player.rect.bottom) + abs(self.rect.bottom - self.player.rect.top)) / 10000
+        x_range = self.player.rect.centerx - self.rect.centerx
+        y_range = self.player.rect.centery - self.rect.centery
+        xy_range = math.hypot(x_range, y_range)
+        if xy_range != 0:
+            x_range /= xy_range*15
+            y_range /= xy_range*15
         x_speed = self.speed * x_range
         y_speed = self.speed * y_range
+        self.rect.x += x_speed
+        self.rect.y += y_speed
         if self.rect.right > self.player.rect.right and self.rect.top > self.player.rect.top:
-            self.rect.right -= x_speed
-            self.rect.top -= y_speed
             self.current_orientation = "left"
         if self.rect.right > self.player.rect.right and self.rect.top < self.player.rect.top:
-            self.rect.right -= x_speed
-            self.rect.top += y_speed
             self.current_orientation = "left"
         if self.rect.right < self.player.rect.right and self.rect.top > self.player.rect.top:
-            self.rect.right += x_speed
-            self.rect.top -= y_speed
             self.current_orientation = "right"
         if self.rect.right < self.player.rect.right and self.rect.top < self.player.rect.top:
-            self.rect.right += x_speed
-            self.rect.top += y_speed
             self.current_orientation = "right"
-        if self.rect.right == self.player.rect.right and self.rect.top > self.player.rect.top:
-            self.rect.top -= y_speed
-        if self.rect.right == self.player.rect.right and self.rect.top < self.player.rect.top:
-            self.rect.top += y_speed
         if self.rect.right > self.player.rect.right and self.rect.top == self.player.rect.top:
-            self.rect.right -= x_speed
             self.current_orientation = "left"
         if self.rect.right < self.player.rect.right and self.rect.top == self.player.rect.top:
-            self.rect.right += x_speed
             self.current_orientation = "right"
 
     def detect_collision(self):
@@ -93,13 +91,13 @@ class RedEnemy(pygame.sprite.Sprite):
                 self.hp -= x.damage
 
     def left_attack_animation(self):
-        self.current_sprite += 0.05
+        self.current_sprite += 0.1
         if self.current_sprite >= len(self.red_enemy_left_attack_sprites):
             self.current_sprite = 0
         self.image = self.red_enemy_left_attack_sprites[int(self.current_sprite)]
 
     def right_attack_animation(self):
-        self.current_sprite += 0.05
+        self.current_sprite += 0.1
         if self.current_sprite >= len(self.red_enemy_right_attack_sprites):
             self.current_sprite = 0
         self.image = self.red_enemy_right_attack_sprites[int(self.current_sprite)]
@@ -127,10 +125,15 @@ class RedEnemy(pygame.sprite.Sprite):
             self.left_death_animation()
 
     def drop_loot(self):
-        if randint(0, 9) >= 7:
+        x = randint(0, 99)
+        if x <= 10:
             Hp(self.rect, self.item_group, self.player)
-        else:
+        elif 10 < x <= 20:
             Gold(self.rect, self.item_group, self.player, randint(10, 20))
+        elif 20 < x <= 30:
+            Armor(self.rect, self.item_group, self.player, 10)
+        elif 30 < x <= 40:
+            AttackDamage(self.rect, self.item_group, self.player, 1)
 
     def is_alive(self):
         if self.hp <= 0:

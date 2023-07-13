@@ -3,6 +3,8 @@ from assets import *
 from random import randint
 from hp import Hp
 from gold import Gold
+from armor import Armor
+from attackdamage import AttackDamage
 
 
 class GreenEnemy(pygame.sprite.Sprite):
@@ -29,6 +31,9 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.timer = 0
         self.x_range = 0.3
         self.y_range = 0.3
+        self.hit_box = self.rect
+        self.mass = 1
+        self.restitution = 0.8
 
     def move(self):
         if self.current_orientation == "right":
@@ -181,10 +186,15 @@ class GreenEnemy(pygame.sprite.Sprite):
                 self.left_blow_animation()
 
     def drop_loot(self):
-        if randint(0, 9) >= 7:
+        x = randint(0, 99)
+        if x <= 10:
             Hp(self.rect, self.item_group, self.player)
-        else:
+        elif 10 < x <= 20:
             Gold(self.rect, self.item_group, self.player, randint(50, 100))
+        elif 20 < x <= 30:
+            Armor(self.rect, self.item_group, self.player, 10)
+        elif 30 < x <= 40:
+            AttackDamage(self.rect, self.item_group, self.player, 1)
 
     def update(self):
         self.is_alive()

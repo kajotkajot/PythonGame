@@ -21,6 +21,8 @@ death_text_rect = death_text.get_rect(center=(960, 720))
 grey_pause_screen = pygame.Surface([WIDTH, HEIGHT], pygame.SRCALPHA)
 grey_pause_screen.fill((50, 50, 50, 255))
 pygame.mouse.set_visible(False)
+boundary_radius = 5000
+boundary_center = (WIDTH / 2, HEIGHT / 2)
 
 # player settings
 PLAYER_HEIGHT = 100

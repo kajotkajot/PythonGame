@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from settings import *
 from assets import *
@@ -15,6 +16,8 @@ class Player(pygame.sprite.Sprite):
         self.player_xp = player_xp
         self.player_lv = level
         self.player_gold = player_gold
+        self.player_armor = 10
+        self.player_attack = 10
         self.camera = pygame.math.Vector2(0, 0)
         self.current_camera_position = pygame.math.Vector2(0, 0)
         self.camera_speed = self.speed/5
@@ -54,7 +57,7 @@ class Player(pygame.sprite.Sprite):
             self.player_left_death_sprites = angel_left_death_sprites
             self.player_right_death_sprites = angel_right_death_sprites
             self.animation_timer = 0.1
-            self.basic_attack_icon = swordsman_basic_attack_icon
+            self.basic_attack_icon = angel_basic_attack_icon
         if character == 'Assassin':
             self.image = assassin_right
             self.image_right = assassin_right
@@ -68,7 +71,7 @@ class Player(pygame.sprite.Sprite):
             self.player_left_death_sprites = assassin_left_death_sprites
             self.player_right_death_sprites = assassin_right_death_sprites
             self.animation_timer = 0.1
-            self.basic_attack_icon = swordsman_basic_attack_icon
+            self.basic_attack_icon = assassin_basic_attack_icon
         if character == 'Mage':
             self.image = mage_right
             self.image_right = mage_right
@@ -82,7 +85,7 @@ class Player(pygame.sprite.Sprite):
             self.player_left_death_sprites = mage_left_death_sprites
             self.player_right_death_sprites = mage_right_death_sprites
             self.animation_timer = 0.15
-            self.basic_attack_icon = swordsman_basic_attack_icon
+            self.basic_attack_icon = mage_basic_attack_icon
         if character == 'Necromancer':
             self.image = necromancer_right
             self.image_right = necromancer_right
@@ -96,7 +99,7 @@ class Player(pygame.sprite.Sprite):
             self.player_left_death_sprites = necromancer_left_death_sprites
             self.player_right_death_sprites = necromancer_right_death_sprites
             self.animation_timer = 0.1
-            self.basic_attack_icon = swordsman_basic_attack_icon
+            self.basic_attack_icon = necromancer_basic_attack_icon
         if character == 'Swordsman':
             self.image = swordsman_right
             self.image_right = swordsman_right
@@ -237,7 +240,9 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.x = 0
                 self.handle_camera(self.camera.x, 0, False)
-            self.rect.center += self.direction * self.speed
+            new_pos = self.rect.center + self.direction * self.speed
+            if math.hypot(new_pos.x - boundary_center[0], new_pos.y - boundary_center[1]) <= boundary_radius:
+                self.rect.center += self.direction * self.speed
 
     def update(self):
         self.input()

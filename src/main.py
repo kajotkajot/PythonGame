@@ -16,12 +16,19 @@ class Main:
     def __init__(self, running, character):
         self.game_active = running
         self.blurred_current_state_image = blurred_current_state_image
-        self.back_button = Button('MENU', 780, 900, button_360x100_image, button_360x100_image_pressed)
-        self.skill_button = Button('SKILLS', 780, 900, button_360x100_image, button_360x100_image_pressed)
+        self.resume_pause_button = Button('RESUME', 780, 640, button_360x100_image, button_360x100_image_pressed)
+        self.controls_button = Button('CONTROLS', 780, 770, button_360x100_image, button_360x100_image_pressed)
+        self.quit_button = Button('QUIT', 780, 900, button_360x100_image, button_360x100_image_pressed)
+        self.resume_inventory_button = Button('RESUME', 1540, 960, button_360x100_image, button_360x100_image_pressed)
+        self.skill_button = Button('SKILLS', 20, 960, button_360x100_image, button_360x100_image_pressed)
+        self.skill_tree_back_button = Button('BACK', 1465, 925, button_360x100_image, button_360x100_image_pressed)
         self.skill_announcement_timer = 0
         self.skill_announcement_transparency = 255
         self.player_lv = 0
         self.pop_up_active = False
+        self.pause_screen = False
+        self.inventory_screen = False
+        self.skill_tree_screen = False
         self.pause_screen_transparency = 255
         self.clicked = False
         self.enemy_group = EnemyGroup()
@@ -38,6 +45,9 @@ class Main:
         self.current_time = 0
         self.basic_attack_timer = 0
         self.basic_attack_cooldown = self.player.basic_attack_cooldown
+        self.background_offset = pygame.math.Vector2()
+        self.background_half_width = screen.get_size()[0] / 2
+        self.background_half_height = screen.get_size()[1] / 2
 
     def run(self):
         # MAIN GAME LOOP:
@@ -52,22 +62,45 @@ class Main:
                             if self.current_time - self.basic_attack_timer > self.basic_attack_cooldown:
                                 self.add_basic_attack()
                         if event.key == pygame.K_ESCAPE:
-                            # creating blurred image for pause menu
+                            # pause screen
                             self.pause_screen_delay()
                             self.game_active = False
+                            self.pause_screen = True
+                        if event.key == pygame.K_TAB:
+                            # inventory screen
+                            self.inventory_screen_delay()
+                            self.game_active = False
+                            self.inventory_screen = True
+                        if event.key == pygame.K_q:
+                            # skill tree screen
+                            self.inventory_screen_delay()
+                            self.game_active = False
+                            self.skill_tree_screen = True
                     if event.type == enemy_timer:
                         self.enemy_spawn()
+                    self.clicked = False
                 else:
-                    if self.player.alive:
+                    if self.player.alive and self.pause_screen:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
                                 self.game_active = True
+                                self.pause_screen = False
+                    if self.player.alive and self.inventory_screen:
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE or event.key == pygame.K_TAB:
+                                self.game_active = True
+                                self.inventory_screen = False
+                    if self.player.alive and self.skill_tree_screen:
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE or event.key == pygame.K_TAB:
+                                self.skill_tree_screen = False
+                                self.inventory_screen = True
                     if event.type == pygame.MOUSEBUTTONUP:
                         self.clicked = False
 
             if self.game_active is True:
                 # show background
-                screen.fill((85, 75, 62))
+                self.display_background()
 
                 # save current ticks
                 self.current_time = pygame.time.get_ticks()
@@ -110,10 +143,14 @@ class Main:
                     self.display_level_up()
             else:
                 # show pause screen
-                if self.player.alive:
-                    self.pause_screen()
+                if self.player.alive and self.pause_screen:
+                    self.display_pause_screen()
+                elif self.player.alive and self.inventory_screen:
+                    self.display_inventory_screen()
+                elif self.player.alive and self.skill_tree_screen:
+                    self.display_skill_tree()
                 else:
-                    self.death_screen()
+                    self.display_death_screen()
 
                 # show custom cursor on screen
                 mouse_pos = pygame.mouse.get_pos()
@@ -135,7 +172,7 @@ class Main:
     def display_level_up(self):
         if self.current_time - self.skill_announcement_timer < 5000:
             level_text = bigger_font.render("LEVEL " + str(self.player_lv), False, 'Black')
-            skill_text = font.render(str(self.player.skill_points) + " SKILL POINT TO USE", False, 'Black')
+            skill_text = font.render("+1 SKILL POINT", False, 'Black')
             level_text_width = level_text.get_width()/2
             skill_text_width = skill_text.get_width()/2
             level_text.set_alpha(self.skill_announcement_transparency)
@@ -185,9 +222,9 @@ class Main:
 
     # skills definition
     def display_skills(self):
-        skill1_border = pygame.Surface([110, 110])
-        skill1_border.fill("black")
-        screen.blit(skill1_border, (20, 950))
+        skill_border = pygame.Surface([110, 110])
+        skill_border.fill("black")
+        screen.blit(skill_border, (20, 950))
         screen.blit(self.player.basic_attack_icon, (25, 955))
         if self.current_time - self.basic_attack_timer < self.basic_attack_cooldown:
             skill_division = self.current_time - self.basic_attack_timer
@@ -198,25 +235,21 @@ class Main:
 
     # for slowly showing pause screen
     def pause_screen_delay(self):
-        screen.blit(current_state_image, (0, 0))
-        screen.blit(self.player.image_right_scaled, (810, 350))
-        pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
-        pause_lv_rect = pause_lv.get_rect(center=(960, 700))
-        screen.blit(pause_lv, pause_lv_rect)
-        screen.blit(grey_pause_screen, (0, 0))
         self.blurred_current_state_image = self.greyscale(current_state_image)
         self.pause_screen_transparency = 255
 
     # show pause screen
-    def pause_screen(self):
+    def display_pause_screen(self):
         from menu import Menu
         self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        screen.blit(self.player.image_right_scaled, (810, 350))
-        pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
-        pause_lv_rect = pause_lv.get_rect(center=(960, 700))
-        screen.blit(pause_lv, pause_lv_rect)
-        if self.back_button.draw(screen) and self.clicked is False:
+        if self.resume_pause_button.draw(screen) and self.clicked is False:
+            self.game_active = True
+            self.pause_screen = False
+            self.clicked = True
+        if self.controls_button.draw(screen) and self.clicked is False:
+            self.clicked = True
+        if self.quit_button.draw(screen) and self.clicked is False:
             menu = Menu(True)
             menu.run(running=True, menu_state='main')
             self.clicked = True
@@ -226,8 +259,91 @@ class Main:
         else:
             grey_pause_screen.set_alpha(self.pause_screen_transparency)
 
+    # for slowly showing inventory screen
+    def inventory_screen_delay(self):
+        self.blurred_current_state_image = self.greyscale(current_state_image)
+        self.pause_screen_transparency = 255
+
+    # show inventory screen
+    def display_inventory_screen(self):
+        self.pause_screen_transparency -= 2
+        screen.blit(self.blurred_current_state_image, screen_rect)
+        screen.blit(self.player.image_right_scaled, (50, 40))
+        pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
+        pause_lv_width = pause_lv.get_width()
+        inventory_hp = font.render(f'{self.player.player_hp}/{player_hp}', False, 'Black')
+        inventory_attack_damage = font.render(f'{self.player.player_attack}', False, 'Black')
+        inventory_armor = font.render(f'{self.player.player_armor}', False, 'Black')
+        inventory_gold = font.render(f'{self.player.player_gold}', False, 'Black')
+        screen.blit(pause_lv, (60+(300-pause_lv_width)/2, 370))
+        screen.blit(hp_heart, (50, 480))
+        screen.blit(attack_damage, (50, 590))
+        screen.blit(armor, (50, 700))
+        screen.blit(gold, (50, 810))
+        screen.blit(inventory_hp, (150, 515))
+        screen.blit(inventory_attack_damage, (150, 625))
+        screen.blit(inventory_armor, (150, 735))
+        screen.blit(inventory_gold, (150, 845))
+        if self.skill_button.draw(screen) and self.clicked is False:
+            self.inventory_screen = False
+            self.skill_tree_screen = True
+            self.clicked = True
+        if self.resume_inventory_button.draw(screen) and self.clicked is False:
+            self.game_active = True
+            self.inventory_screen = False
+            self.clicked = True
+        if self.pause_screen_transparency > 0:
+            grey_pause_screen.set_alpha(self.pause_screen_transparency)
+            screen.blit(grey_pause_screen, (0, 0))
+        else:
+            grey_pause_screen.set_alpha(self.pause_screen_transparency)
+
+    # display skill tree
+    def display_skill_tree(self):
+        self.pause_screen_transparency -= 2
+        mouse_pos = pygame.mouse.get_pos()
+        screen.blit(self.blurred_current_state_image, screen_rect)
+        skill_border = pygame.Surface([220, 250])
+        skill_border.fill("black")
+        skill_description = pygame.Surface([450, 805])
+        skill_description.fill("purple")
+        skill_point = pygame.Surface([60, 20])
+        skill_point.fill("green")
+        self.skill((75, 75), tree_angel_skill1_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((75, 430), tree_angel_skill2_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((75, 785), tree_angel_skill3_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((430, 75), tree_angel_skill4_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((430, 430), tree_angel_skill5_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((430, 785), tree_angel_skill6_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((785, 75), tree_angel_skill7_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((785, 430), tree_angel_skill8_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((785, 785), tree_angel_skill9_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((1140, 75), tree_angel_skill10_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((1140, 430), tree_angel_skill11_icon, mouse_pos, skill_border, skill_description, skill_point)
+        self.skill((1140, 785), tree_angel_skill12_icon, mouse_pos, skill_border, skill_description, skill_point)
+        if self.skill_tree_back_button.draw(screen) and self.clicked is False:
+            self.inventory_screen = True
+            self.skill_tree_screen = False
+            self.clicked = True
+        if self.pause_screen_transparency > 0:
+            grey_pause_screen.set_alpha(self.pause_screen_transparency)
+            screen.blit(grey_pause_screen, (0, 0))
+        else:
+            grey_pause_screen.set_alpha(self.pause_screen_transparency)
+
+    # display individual skill
+    @staticmethod
+    def skill(position, image, mouse_pos, skill_border, skill_description, skill_point):
+        screen.blit(skill_border, (position[0]-10, position[1]-10))
+        screen.blit(image, position)
+        screen.blit(skill_point, (position[0], position[1] + 210))
+        screen.blit(skill_point, (position[0] + 70, position[1] + 210))
+        screen.blit(skill_point, (position[0] + 140, position[1] + 210))
+        if image.get_rect().move(position).collidepoint(mouse_pos):
+            screen.blit(skill_description, (1420, 65))
+
     # show death screen
-    def death_screen(self):
+    def display_death_screen(self):
         from menu import Menu
         screen.fill("grey")
         screen.blit(death_text, death_text_rect)
@@ -235,10 +351,17 @@ class Main:
         death_level_rect = death_level.get_rect(center=(960, 800))
         screen.blit(death_level, death_level_rect)
         screen.blit(self.player.image_death_scaled, (810, 350))
-        if self.back_button.draw(screen) and self.clicked is False:
+        if self.quit_button.draw(screen) and self.clicked is False:
             menu = Menu(True)
             menu.run(running=True, menu_state='main')
             self.clicked = True
+
+    # background definition
+    def display_background(self):
+        self.background_offset.x = self.player.rect.centerx - self.background_half_width
+        self.background_offset.y = self.player.rect.centery - self.background_half_height
+        offset_pos = [-4040, -4460] - self.background_offset + self.player.camera
+        screen.blit(arena_background, offset_pos)
 
     # random enemy spawns
     def enemy_spawn(self):

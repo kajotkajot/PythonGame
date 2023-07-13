@@ -1,4 +1,5 @@
 import sys
+from random import randint
 from settings import *
 from assets import *
 from button import Button
@@ -40,6 +41,10 @@ class Menu:
         self.clicked = clicked
         self.chosen_character = ''
         self.chose_made = False
+        self.arena_x = -4040
+        self.arena_y = -4460
+        self.background_timer = 0
+        self.random_direction = 0
 
     def run(self, running, menu_state):
         while running:
@@ -57,8 +62,9 @@ class Menu:
                             self.character_menu_position -= 1
                             self.character_choice('left')
 
+            self.moving_background()
+
             if menu_state == 'main':
-                screen.fill((85, 75, 62))
                 if self.start_button.draw(screen) and self.clicked is False:
                     menu_state = 'character_choice'
                     self.clicked = True
@@ -74,7 +80,6 @@ class Menu:
                     sys.exit()
 
             if menu_state == 'settings':
-                screen.fill((85, 75, 62))
                 if self.resolution1280x720_button.draw(screen) and self.clicked is False:
                     self.clicked = True
 
@@ -87,7 +92,6 @@ class Menu:
 
             if menu_state == 'character_choice':
                 from main import Main
-                screen.fill((85, 75, 62))
                 if self.knight_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Knight'
                     for button in self.character_button_list:
@@ -189,6 +193,30 @@ class Menu:
                 self.characters_image_positions = [position - 615 for position in self.characters_image_positions]
                 for button in self.character_button_list:
                     button.rect.x -= 615
+
+    def moving_background(self):
+        if -8080 < self.arena_x < 0 and -8920 < self.arena_y < 0:
+            if self.background_timer < 500:
+                self.background_timer += 1
+                if self.random_direction == 0:
+                    self.arena_x += 0.5
+                    self.arena_y += 0.5
+                if self.random_direction == 1:
+                    self.arena_x += 0.5
+                    self.arena_y -= 0.5
+                if self.random_direction == 2:
+                    self.arena_x -= 0.5
+                    self.arena_y -= 0.5
+                if self.random_direction == 3:
+                    self.arena_x -= 0.5
+                    self.arena_y += 0.5
+            else:
+                self.random_direction = randint(0, 3)
+                self.background_timer = 0
+        else:
+            self.arena_x = -4040
+            self.arena_y = -4460
+        screen.blit(arena_background, (self.arena_x, self.arena_y))
 
 
 if __name__ == '__main__':
