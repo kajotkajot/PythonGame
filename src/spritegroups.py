@@ -152,3 +152,49 @@ class ItemGroup(pygame.sprite.Group):
             if sprite.attracted is False:
                 self.display.blit(sprite.shadow, shadow_offset_pos)
             self.display.blit(sprite.image, offset_pos)
+
+
+class SkillGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display = pygame.display.get_surface()
+
+    def custom_draw(self):
+        for sprite in self.sprites():
+            mouse_pos = pygame.mouse.get_pos()
+            screen.blit(sprite.skill_border, (sprite.position[0] - 10, sprite.position[1] - 10))
+            screen.blit(sprite.image, sprite.position)
+            screen.blit(sprite.skill_point1, (sprite.position[0], sprite.position[1] + 210))
+            screen.blit(sprite.skill_point2, (sprite.position[0] + 70, sprite.position[1] + 210))
+            screen.blit(sprite.skill_point3, (sprite.position[0] + 140, sprite.position[1] + 210))
+            if sprite.skill_availability_bool is False:
+                screen.blit(sprite.skill_availability, sprite.position)
+            if sprite.image.get_rect().move(sprite.position).collidepoint(mouse_pos):
+                if pygame.mouse.get_pressed()[0] == 1 and sprite.clicked is False:
+                    for other_sprite in self.sprites():
+                        other_sprite.action = False
+                    sprite.clicked = True
+                    sprite.action = True
+            if sprite.action:
+                screen.blit(sprite.skill_description, (1420, 65))
+                if sprite.skill_availability_bool and sprite.player.skill_points > 0 and sprite.added_skill_point3 is False:
+                    if sprite.add_skill_button.draw(screen) and sprite.clicked is False:
+                        if sprite.player.skill_points > 0:
+                            if sprite.added_skill_point1 and sprite.added_skill_point2 and sprite.added_skill_point3 is False:
+                                sprite.skill_point3.fill("green")
+                                sprite.added_skill_point3 = True
+                            if sprite.added_skill_point1 and sprite.added_skill_point2 is False:
+                                sprite.skill_point2.fill("green")
+                                sprite.added_skill_point2 = True
+                            if sprite.added_skill_point1 is False:
+                                sprite.skill_point1.fill("green")
+                                sprite.added_skill_point1 = True
+                            sprite.player.skill_points -= 1
+                        sprite.clicked = True
+            if sprite.added_skill_point2:
+                temp_id = sprite.id
+                for other_sprite in self.sprites():
+                    if other_sprite.id == temp_id + 3:
+                        other_sprite.skill_availability_bool = True
+            if pygame.mouse.get_pressed()[0] == 0:
+                sprite.clicked = False

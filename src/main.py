@@ -19,8 +19,8 @@ class Main:
         self.resume_pause_button = Button('RESUME', 780, 640, button_360x100_image, button_360x100_image_pressed)
         self.controls_button = Button('CONTROLS', 780, 770, button_360x100_image, button_360x100_image_pressed)
         self.quit_button = Button('QUIT', 780, 900, button_360x100_image, button_360x100_image_pressed)
-        self.resume_inventory_button = Button('RESUME', 1540, 960, button_360x100_image, button_360x100_image_pressed)
-        self.skill_button = Button('SKILLS', 20, 960, button_360x100_image, button_360x100_image_pressed)
+        self.resume_inventory_button = Button('RESUME', 1465, 925, button_360x100_image, button_360x100_image_pressed)
+        self.skill_button = Button('SKILLS', 95, 925, button_360x100_image, button_360x100_image_pressed)
         self.skill_tree_back_button = Button('BACK', 1465, 925, button_360x100_image, button_360x100_image_pressed)
         self.skill_announcement_timer = 0
         self.skill_announcement_transparency = 255
@@ -63,17 +63,17 @@ class Main:
                                 self.add_basic_attack()
                         if event.key == pygame.K_ESCAPE:
                             # pause screen
-                            self.pause_screen_delay()
+                            self.screen_delay()
                             self.game_active = False
                             self.pause_screen = True
                         if event.key == pygame.K_TAB:
                             # inventory screen
-                            self.inventory_screen_delay()
+                            self.screen_delay()
                             self.game_active = False
                             self.inventory_screen = True
                         if event.key == pygame.K_q:
                             # skill tree screen
-                            self.inventory_screen_delay()
+                            self.screen_delay()
                             self.game_active = False
                             self.skill_tree_screen = True
                     if event.type == enemy_timer:
@@ -95,6 +95,9 @@ class Main:
                             if event.key == pygame.K_ESCAPE or event.key == pygame.K_TAB:
                                 self.skill_tree_screen = False
                                 self.inventory_screen = True
+                            if event.key == pygame.K_q:
+                                self.skill_tree_screen = False
+                                self.game_active = True
                     if event.type == pygame.MOUSEBUTTONUP:
                         self.clicked = False
 
@@ -127,10 +130,13 @@ class Main:
                 # saving current screen
                 pygame.Surface.blit(current_state_image, screen, screen_rect)
 
+                # show minimap
+                self.draw_in_game_minimap()
+
                 # show hp and xp on the screen
                 if self.player.death_animation is False and self.player.alive is False:
                     self.game_active = False
-                if self.game_active and self.player.player_hp >= 0:
+                if self.game_active and self.player.player_current_hp >= 0:
                     self.display_hp()
                     self.display_xp()
                     self.display_skills()
@@ -187,10 +193,10 @@ class Main:
 
     # HP definition
     def display_hp(self):
-        if self.player.player_hp >= player_hp:
-            self.player.player_hp = player_hp
-        hp_division = player_hp / 500
-        hp_bar = pygame.Surface([self.player.player_hp / hp_division, 35])
+        if self.player.player_current_hp >= self.player.player_max_hp:
+            self.player.player_current_hp = self.player.player_max_hp
+        hp_division = self.player.player_max_hp / 500
+        hp_bar = pygame.Surface([self.player.player_current_hp / hp_division, 35])
         hp_bar_under = pygame.Surface([500, 35])
         hp_bar_border = pygame.Surface([510, 45])
         hp_bar.fill("red")
@@ -233,8 +239,8 @@ class Main:
             skill1_loading.set_alpha(100)
             screen.blit(skill1_loading, (25, 955))
 
-    # for slowly showing pause screen
-    def pause_screen_delay(self):
+    # for slowly showing pause and inventory screen
+    def screen_delay(self):
         self.blurred_current_state_image = self.greyscale(current_state_image)
         self.pause_screen_transparency = 255
 
@@ -259,31 +265,27 @@ class Main:
         else:
             grey_pause_screen.set_alpha(self.pause_screen_transparency)
 
-    # for slowly showing inventory screen
-    def inventory_screen_delay(self):
-        self.blurred_current_state_image = self.greyscale(current_state_image)
-        self.pause_screen_transparency = 255
-
     # show inventory screen
     def display_inventory_screen(self):
         self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        screen.blit(self.player.image_right_scaled, (50, 40))
+        screen.blit(self.player.image_right_scaled, (105, 55))
         pause_lv = bigger_font.render(f'Level:{self.player.player_lv}', False, 'Black')
         pause_lv_width = pause_lv.get_width()
-        inventory_hp = font.render(f'{self.player.player_hp}/{player_hp}', False, 'Black')
+        inventory_hp = font.render(f'{self.player.player_current_hp}/{self.player.player_max_hp}', False, 'Black')
         inventory_attack_damage = font.render(f'{self.player.player_attack}', False, 'Black')
         inventory_armor = font.render(f'{self.player.player_armor}', False, 'Black')
         inventory_gold = font.render(f'{self.player.player_gold}', False, 'Black')
-        screen.blit(pause_lv, (60+(300-pause_lv_width)/2, 370))
-        screen.blit(hp_heart, (50, 480))
-        screen.blit(attack_damage, (50, 590))
-        screen.blit(armor, (50, 700))
-        screen.blit(gold, (50, 810))
-        screen.blit(inventory_hp, (150, 515))
-        screen.blit(inventory_attack_damage, (150, 625))
-        screen.blit(inventory_armor, (150, 735))
-        screen.blit(inventory_gold, (150, 845))
+        screen.blit(pause_lv, (115+(300-pause_lv_width)/2, 350))
+        screen.blit(health, (105, 445))
+        screen.blit(attack_damage, (105, 555))
+        screen.blit(armor, (105, 665))
+        screen.blit(gold, (105, 775))
+        screen.blit(inventory_hp, (205, 480))
+        screen.blit(inventory_attack_damage, (205, 590))
+        screen.blit(inventory_armor, (205, 700))
+        screen.blit(inventory_gold, (205, 810))
+        self.draw_inventory_minimap()
         if self.skill_button.draw(screen) and self.clicked is False:
             self.inventory_screen = False
             self.skill_tree_screen = True
@@ -298,29 +300,49 @@ class Main:
         else:
             grey_pause_screen.set_alpha(self.pause_screen_transparency)
 
+    # display inventory minimap
+    def draw_inventory_minimap(self):
+        inventory_minimap_surface.blit(inventory_minimap_background, (0, 0))
+        player_minimap_x = int((self.player.rect.x + 4040) * inventory_minimap_scale_x) + 4
+        player_minimap_y = int((self.player.rect.y + 4460) * inventory_minimap_scale_y) + 4
+        for sprite in self.enemy_group.sprites():
+            enemy_minimap_x = int((sprite.rect.x + 4040) * inventory_minimap_scale_x) + 4
+            enemy_minimap_y = int((sprite.rect.y + 4460) * inventory_minimap_scale_y) + 4
+            pygame.draw.circle(inventory_minimap_surface, enemy_color, (enemy_minimap_x, enemy_minimap_y), 4)
+        for sprite in self.item_group.sprites():
+            item_minimap_x = int((sprite.rect.x + 4040) * inventory_minimap_scale_x) + 4
+            item_minimap_y = int((sprite.rect.y + 4460) * inventory_minimap_scale_y) + 4
+            pygame.draw.circle(inventory_minimap_surface, item_color, (item_minimap_x, item_minimap_y), 4)
+        pygame.draw.circle(inventory_minimap_surface, player_color, (player_minimap_x, player_minimap_y), 4)
+        camera_rect = pygame.Rect(player_minimap_x - (960 * inventory_minimap_scale_x), player_minimap_y - (540 * inventory_minimap_scale_y), (1920 * inventory_minimap_scale_x) + 4, (1080 * inventory_minimap_scale_y) + 4)
+        pygame.draw.rect(inventory_minimap_surface, (0, 0, 0, 0), camera_rect, width=2)
+        pygame.draw.rect(inventory_minimap_surface, (0, 0, 0, 0), (0, 0, INV_MINIMAP_WIDTH, INV_MINIMAP_HEIGHT), width=5)
+        screen.blit(inventory_minimap_surface, (475, 55))
+
+    # display in-game minimap
+    def draw_in_game_minimap(self):
+        self.background_offset.x = (self.player.rect.centerx - self.background_half_width) * in_game_minimap_scale_x
+        self.background_offset.y = (self.player.rect.centery - self.background_half_height) * in_game_minimap_scale_y
+        in_game_minimap_surface.blit(in_game_minimap_background, ((0 - 375 - self.background_offset.x), (0 - 375 - self.background_offset.y)))
+        for sprite in self.enemy_group.sprites():
+            enemy_minimap_x = int((sprite.rect.x + 350) * in_game_minimap_scale_x) - self.background_offset.x
+            enemy_minimap_y = int((sprite.rect.y + 750) * in_game_minimap_scale_y) - self.background_offset.y
+            pygame.draw.circle(in_game_minimap_surface, enemy_color, (enemy_minimap_x, enemy_minimap_y), 4)
+        for sprite in self.item_group.sprites():
+            item_minimap_x = int((sprite.rect.x + 350) * in_game_minimap_scale_x) - self.background_offset.x
+            item_minimap_y = int((sprite.rect.y + 750) * in_game_minimap_scale_y) - self.background_offset.y
+            pygame.draw.circle(in_game_minimap_surface, item_color, (item_minimap_x, item_minimap_y), 4)
+        pygame.draw.circle(in_game_minimap_surface, player_color, (IN_GAME_MINIMAP_WIDTH/2, IN_GAME_MINIMAP_HEIGHT/2), 4)
+        pygame.draw.rect(in_game_minimap_surface, (0, 0, 0, 0), (0, 0, IN_GAME_MINIMAP_WIDTH, IN_GAME_MINIMAP_HEIGHT), width=5)
+        screen.blit(in_game_minimap_surface, (1650, 810))
+
     # display skill tree
     def display_skill_tree(self):
         self.pause_screen_transparency -= 2
-        mouse_pos = pygame.mouse.get_pos()
         screen.blit(self.blurred_current_state_image, screen_rect)
-        skill_border = pygame.Surface([220, 250])
-        skill_border.fill("black")
-        skill_description = pygame.Surface([450, 805])
-        skill_description.fill("purple")
-        skill_point = pygame.Surface([60, 20])
-        skill_point.fill("green")
-        self.skill((75, 75), tree_angel_skill1_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((75, 430), tree_angel_skill2_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((75, 785), tree_angel_skill3_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((430, 75), tree_angel_skill4_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((430, 430), tree_angel_skill5_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((430, 785), tree_angel_skill6_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((785, 75), tree_angel_skill7_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((785, 430), tree_angel_skill8_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((785, 785), tree_angel_skill9_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((1140, 75), tree_angel_skill10_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((1140, 430), tree_angel_skill11_icon, mouse_pos, skill_border, skill_description, skill_point)
-        self.skill((1140, 785), tree_angel_skill12_icon, mouse_pos, skill_border, skill_description, skill_point)
+        skill_point_text = font.render(f'{self.player.skill_points} skill points', False, 'Purple')
+        screen.blit(skill_point_text, (1475, 700))
+        self.player.skill_group.custom_draw()
         if self.skill_tree_back_button.draw(screen) and self.clicked is False:
             self.inventory_screen = True
             self.skill_tree_screen = False
@@ -330,17 +352,6 @@ class Main:
             screen.blit(grey_pause_screen, (0, 0))
         else:
             grey_pause_screen.set_alpha(self.pause_screen_transparency)
-
-    # display individual skill
-    @staticmethod
-    def skill(position, image, mouse_pos, skill_border, skill_description, skill_point):
-        screen.blit(skill_border, (position[0]-10, position[1]-10))
-        screen.blit(image, position)
-        screen.blit(skill_point, (position[0], position[1] + 210))
-        screen.blit(skill_point, (position[0] + 70, position[1] + 210))
-        screen.blit(skill_point, (position[0] + 140, position[1] + 210))
-        if image.get_rect().move(position).collidepoint(mouse_pos):
-            screen.blit(skill_description, (1420, 65))
 
     # show death screen
     def display_death_screen(self):

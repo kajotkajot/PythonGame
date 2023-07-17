@@ -8,6 +8,10 @@ cursor = pygame.transform.scale(pygame.image.load('res/cursor.png').convert_alph
 ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
                  pygame.image.load('res/ghost2.png').convert_alpha()]
 
+# minimap assets
+inventory_minimap_background = pygame.transform.scale(arena_background, (970, 970))
+in_game_minimap_background = pygame.transform.scale(arena_background, (1000, 1000))
+
 # knight assets
 knight_right = pygame.image.load('res/knight_stand_right1.png').convert_alpha()
 knight_right_scaled = pygame.transform.scale(knight_right, (300, 300))
@@ -337,7 +341,8 @@ swordsman_basic_attack_animation_sprites = [pygame.image.load('res/swordsman_bas
                                             pygame.image.load('res/swordsman_basic_attack_animation5.png').convert_alpha()]
 
 # item assets
-hp_heart = pygame.image.load('res/hp_heart.png').convert_alpha()
+health = pygame.image.load('res/health.png').convert_alpha()
+health_potion = pygame.image.load('res/health_potion.png').convert_alpha()
 gold = pygame.image.load('res/gold.png').convert_alpha()
 armor = pygame.image.load('res/armor.png').convert_alpha()
 attack_damage = pygame.image.load('res/attack_damage.png').convert_alpha()
@@ -354,3 +359,4 @@ button_arrow_image_right = pygame.image.load('res/button_arrow_image_default_rig
 button_arrow_image_right_pressed = pygame.image.load('res/button_arrow_image_active_right.png').convert_alpha()
 button_arrow_image_left = pygame.image.load('res/button_arrow_image_default_left.png').convert_alpha()
 button_arrow_image_left_pressed = pygame.image.load('res/button_arrow_image_active_left.png').convert_alpha()
+skill_description = pygame.transform.scale(button_540x540_image, (450, 605))

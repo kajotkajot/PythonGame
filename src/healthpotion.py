@@ -3,12 +3,12 @@ import numpy as np
 from assets import *
 
 
-class AttackDamage(pygame.sprite.Sprite):
-    def __init__(self, position, group, player, attack_value):
+class HealthPotion(pygame.sprite.Sprite):
+    def __init__(self, position, group, player):
         super().__init__(group)
         self.player = player
-        self.image = attack_damage
-        self.value = attack_value
+        self.image = health_potion
+        self.value = 100
         self.shadow = item_shadow
         self.rect = position
         self.origin = pygame.Rect.copy(self.rect)
@@ -44,9 +44,9 @@ class AttackDamage(pygame.sprite.Sprite):
             self.rect.y += y_speed
 
     def collision(self):
-        if self.rect.colliderect(self.player.rect):
+        if self.rect.colliderect(self.player.rect) and self.player.player_current_hp < self.player.player_max_hp and self.player.alive:
             self.kill()
-            self.player.player_attack += self.value
+            self.player.player_current_hp += self.value
 
     def update(self):
         self.collision()

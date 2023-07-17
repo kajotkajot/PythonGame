@@ -2,6 +2,8 @@ import math
 import numpy as np
 from settings import *
 from assets import *
+from skill import Skill
+from spritegroups import SkillGroup
 
 
 class Player(pygame.sprite.Sprite):
@@ -12,7 +14,8 @@ class Player(pygame.sprite.Sprite):
         self.current_death_sprite = 0
         self.current_sprite = 0
         self.current_orientation = "right"
-        self.player_hp = player_hp
+        self.player_max_hp = player_max_hp
+        self.player_current_hp = player_max_hp
         self.player_xp = player_xp
         self.player_lv = level
         self.player_gold = player_gold
@@ -28,8 +31,10 @@ class Player(pygame.sprite.Sprite):
         self.ghost_image = ghost_sprites[0]
         self.alive = True
         self.death_animation = False
-        self.skill_points = 0
+        self.skill_points = player_skill_points
         self.basic_attack_cooldown = 1000
+        self.skill_group = SkillGroup()
+        self.skill_group.empty()
         if character == 'Knight':
             self.image = knight_right
             self.image_right = knight_right
@@ -58,6 +63,18 @@ class Player(pygame.sprite.Sprite):
             self.player_right_death_sprites = angel_right_death_sprites
             self.animation_timer = 0.1
             self.basic_attack_icon = angel_basic_attack_icon
+            self.skill1 = Skill(1, (75, 75), tree_angel_skill1_icon, self.skill_group, self, True)
+            self.skill2 = Skill(2, (75, 430), tree_angel_skill2_icon, self.skill_group, self, True)
+            self.skill3 = Skill(3, (75, 785), tree_angel_skill3_icon, self.skill_group, self, True)
+            self.skill4 = Skill(4, (430, 75), tree_angel_skill4_icon, self.skill_group, self, False)
+            self.skill5 = Skill(5, (430, 430), tree_angel_skill5_icon, self.skill_group, self, False)
+            self.skill6 = Skill(6, (430, 785), tree_angel_skill6_icon, self.skill_group, self, False)
+            self.skill7 = Skill(7, (785, 75), tree_angel_skill7_icon, self.skill_group, self, False)
+            self.skill8 = Skill(8, (785, 430), tree_angel_skill8_icon, self.skill_group, self, False)
+            self.skill9 = Skill(9, (785, 785), tree_angel_skill9_icon, self.skill_group, self, False)
+            self.skill10 = Skill(10, (1140, 75), tree_angel_skill10_icon, self.skill_group, self, False)
+            self.skill11 = Skill(11, (1140, 430), tree_angel_skill11_icon, self.skill_group, self, False)
+            self.skill12 = Skill(12, (1140, 785), tree_angel_skill12_icon, self.skill_group, self, False)
         if character == 'Assassin':
             self.image = assassin_right
             self.image_right = assassin_right
@@ -120,27 +137,17 @@ class Player(pygame.sprite.Sprite):
         if up:
             self.direction.y = -1
             self.handle_camera(0, -self.camera_speed, True)
-            if self.current_orientation == "right":
-                self.animation_right()
-            if self.current_orientation == "left":
-                self.animation_left()
         if down:
             self.direction.y = 1
             self.handle_camera(0, self.camera_speed, True)
-            if self.current_orientation == "right":
-                self.animation_right()
-            if self.current_orientation == "left":
-                self.animation_left()
         if right:
             self.direction.x = 1
             self.handle_camera(self.camera_speed, 0, True)
             self.current_orientation = "right"
-            self.animation_right()
         if left:
             self.direction.x = -1
             self.handle_camera(-self.camera_speed, 0, True)
             self.current_orientation = "left"
-            self.animation_left()
 
     def animation_right(self):
         self.current_sprite += 0.01 * self.speed
@@ -186,8 +193,8 @@ class Player(pygame.sprite.Sprite):
             self.ghost_animation()
 
     def player_alive(self):
-        if self.player_hp <= 0:
-            self.player_hp = 0
+        if self.player_current_hp <= 0:
+            self.player_current_hp = 0
             self.death_animation = True
             self.death_check()
             self.alive = False
@@ -240,6 +247,14 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.x = 0
                 self.handle_camera(self.camera.x, 0, False)
+            if self.direction.x != 0 or self.direction.y != 0:
+                if self.current_orientation == "right":
+                    self.animation_right()
+                if self.current_orientation == "left":
+                    self.animation_left()
+            if self.direction.x != 0 and self.direction.y != 0:
+                self.direction.x /= math.sqrt(2)
+                self.direction.y /= math.sqrt(2)
             new_pos = self.rect.center + self.direction * self.speed
             if math.hypot(new_pos.x - boundary_center[0], new_pos.y - boundary_center[1]) <= boundary_radius:
                 self.rect.center += self.direction * self.speed

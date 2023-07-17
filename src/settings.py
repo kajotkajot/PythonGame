@@ -1,11 +1,28 @@
 import pygame
 
 # window settings
-WIDTH = 1920
-HEIGHT = 1080
+WIDTH, HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = screen.get_rect(center=(WIDTH/2, HEIGHT/2))
 pygame.display.set_caption("Hemorrhoid Fighter")
+
+# inventory minimap settings
+MAP_WIDTH, MAP_HEIGHT = 10000, 10000
+INV_MINIMAP_WIDTH, INV_MINIMAP_HEIGHT = 970, 970
+inventory_minimap_scale_x = INV_MINIMAP_WIDTH / MAP_WIDTH
+inventory_minimap_scale_y = INV_MINIMAP_HEIGHT / MAP_HEIGHT
+inventory_minimap_surface = pygame.Surface((INV_MINIMAP_WIDTH, INV_MINIMAP_HEIGHT))
+inventory_minimap_surface.set_alpha(255)
+player_color = (0, 255, 255)
+enemy_color = (255, 0, 0)
+item_color = (0, 255, 0)
+
+# in-game minimap settings
+IN_GAME_MINIMAP_WIDTH, IN_GAME_MINIMAP_HEIGHT = 250, 250
+in_game_minimap_scale_x = IN_GAME_MINIMAP_WIDTH / MAP_WIDTH * 4
+in_game_minimap_scale_y = IN_GAME_MINIMAP_HEIGHT / MAP_HEIGHT * 4
+in_game_minimap_surface = pygame.Surface((IN_GAME_MINIMAP_WIDTH, IN_GAME_MINIMAP_HEIGHT))
+in_game_minimap_surface.set_alpha(255)
 
 # game settings
 game_active = False
@@ -14,6 +31,7 @@ clock = pygame.time.Clock()
 font = pygame.font.Font("res/font.ttf", 35)
 bigger_font = pygame.font.Font("res/font.ttf", 65)
 menu_font = pygame.font.Font("res/font.ttf", 60)
+skill_font = pygame.font.Font("res/font.ttf", 25)
 hp_text = font.render('HP', False, 'Black')
 xp_text = font.render('LEVEL', False, 'Black')
 death_text = bigger_font.render('YOU DIED', False, 'Black')
@@ -27,19 +45,20 @@ boundary_center = (WIDTH / 2, HEIGHT / 2)
 # player settings
 PLAYER_HEIGHT = 100
 PLAYER_WIDTH = 100
-player_hp = 10000
+player_max_hp = 10000
 player_xp = 0
 level = 1
 needed_player_xp = 1000
 player_speed = 10
 player_gold = 0
+player_skill_points = 100
 
 # item settings
-hp_value = 100
+health_value = 100
 
 # enemy settings
 enemy_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(enemy_timer, 1000)
+pygame.time.set_timer(enemy_timer, 500)
 
 # red enemy settings
 red_enemy_hp = 100

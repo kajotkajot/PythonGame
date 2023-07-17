@@ -1,10 +1,11 @@
 from settings import *
 from assets import *
 from random import randint
-from hp import Hp
+from health import Health
 from gold import Gold
 from armor import Armor
 from attackdamage import AttackDamage
+from healthpotion import HealthPotion
 
 
 class GreenEnemy(pygame.sprite.Sprite):
@@ -97,7 +98,7 @@ class GreenEnemy(pygame.sprite.Sprite):
 
     def detect_collision(self):
         if self.rect.colliderect(self.player.rect) and not self.speed == 0:
-            self.player.player_hp -= green_enemy_damage
+            self.player.player_current_hp -= green_enemy_damage
             if self in self.enemy_group:
                 self.enemy_group.remove(self)
                 self.dead_enemy_group.add(self)
@@ -188,13 +189,15 @@ class GreenEnemy(pygame.sprite.Sprite):
     def drop_loot(self):
         x = randint(0, 99)
         if x <= 10:
-            Hp(self.rect, self.item_group, self.player)
+            Health(self.rect, self.item_group, self.player)
         elif 10 < x <= 20:
             Gold(self.rect, self.item_group, self.player, randint(50, 100))
         elif 20 < x <= 30:
             Armor(self.rect, self.item_group, self.player, 10)
         elif 30 < x <= 40:
             AttackDamage(self.rect, self.item_group, self.player, 1)
+        elif 40 < x <= 50:
+            HealthPotion(self.rect, self.item_group, self.player)
 
     def update(self):
         self.is_alive()

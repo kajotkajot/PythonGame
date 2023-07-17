@@ -1,5 +1,6 @@
-from assets import *
+import math
 import numpy as np
+from assets import *
 
 
 class Gold(pygame.sprite.Sprite):
@@ -15,7 +16,7 @@ class Gold(pygame.sprite.Sprite):
         self.origin.y -= 35
         self.rect.x -= 15
         self.rect.y -= 35
-        self.magnet_speed = 0.1
+        self.magnet_speed = 15
         self.time = 0
         self.transparency = 255
         self.attracted = False
@@ -31,31 +32,16 @@ class Gold(pygame.sprite.Sprite):
     def magnet(self):
         if abs(self.rect.center[0] - self.player.rect.center[0]) < 150 and abs(self.rect.center[1] - self.player.rect.center[1]) < 150:
             self.attracted = True
-            x_range = abs(self.rect.center[0] - self.player.rect.center[0])
-            y_range = abs(self.rect.center[1] - self.player.rect.center[1])
+            x_range = self.player.rect.centerx - self.rect.centerx
+            y_range = self.player.rect.centery - self.rect.centery
+            xy_range = math.hypot(x_range, y_range)
+            if xy_range != 0:
+                x_range /= xy_range
+                y_range /= xy_range
             x_speed = self.magnet_speed * x_range
             y_speed = self.magnet_speed * y_range
-            self.magnet_speed += 0.05
-            if self.rect.center[0] > self.player.rect.center[0] and self.rect.center[1] > self.player.rect.center[1]:
-                self.rect.right -= x_speed
-                self.rect.bottom -= y_speed
-            if self.rect.center[0] > self.player.rect.center[0] and self.rect.center[1] < self.player.rect.center[1]:
-                self.rect.right -= x_speed
-                self.rect.top += y_speed
-            if self.rect.center[0] < self.player.rect.center[0] and self.rect.center[1] > self.player.rect.center[1]:
-                self.rect.left += x_speed
-                self.rect.bottom -= y_speed
-            if self.rect.center[0] < self.player.rect.center[0] and self.rect.center[1] < self.player.rect.center[1]:
-                self.rect.left += x_speed
-                self.rect.top += y_speed
-            if self.rect.center[0] == self.player.rect.center[0] and self.rect.center[1] > self.player.rect.center[1]:
-                self.rect.bottom -= y_speed
-            if self.rect.center[0] == self.player.rect.center[0] and self.rect.center[1] < self.player.rect.center[1]:
-                self.rect.top += y_speed
-            if self.rect.center[0] > self.player.rect.center[0] and self.rect.center[1] == self.player.rect.center[1]:
-                self.rect.right -= x_speed
-            if self.rect.center[0] < self.player.rect.center[0] and self.rect.center[1] == self.player.rect.center[1]:
-                self.rect.left += x_speed
+            self.rect.x += x_speed
+            self.rect.y += y_speed
 
     def collision(self):
         if self.rect.colliderect(self.player.rect):

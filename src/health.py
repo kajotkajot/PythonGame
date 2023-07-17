@@ -1,14 +1,15 @@
 import math
 import numpy as np
+from settings import *
 from assets import *
 
 
-class AttackDamage(pygame.sprite.Sprite):
-    def __init__(self, position, group, player, attack_value):
+class Health(pygame.sprite.Sprite):
+    def __init__(self, position, group, player):
         super().__init__(group)
         self.player = player
-        self.image = attack_damage
-        self.value = attack_value
+        self.image = health
+        self.value = health_value
         self.shadow = item_shadow
         self.rect = position
         self.origin = pygame.Rect.copy(self.rect)
@@ -22,12 +23,11 @@ class AttackDamage(pygame.sprite.Sprite):
         self.attracted = False
 
     def animation(self):
-        if self.attracted is False:
-            self.time += 0.06
-            y = np.sin(1.1*self.time)*2
-            self.rect.top -= y
-            self.transparency -= 3.5*y
-            self.shadow.set_alpha(self.transparency)
+        self.time += 0.06
+        y = np.sin(1.1*self.time)*2
+        self.rect.top -= y
+        self.transparency -= 3.5*y
+        self.shadow.set_alpha(self.transparency)
 
     def magnet(self):
         if abs(self.rect.center[0] - self.player.rect.center[0]) < 150 and abs(self.rect.center[1] - self.player.rect.center[1]) < 150:
@@ -44,9 +44,9 @@ class AttackDamage(pygame.sprite.Sprite):
             self.rect.y += y_speed
 
     def collision(self):
-        if self.rect.colliderect(self.player.rect):
+        if self.rect.colliderect(self.player.rect) and self.player.alive:
             self.kill()
-            self.player.player_attack += self.value
+            self.player.player_max_hp += self.value
 
     def update(self):
         self.collision()
