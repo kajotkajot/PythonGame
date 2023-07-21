@@ -19,8 +19,8 @@ class Player(pygame.sprite.Sprite):
         self.player_xp = player_xp
         self.player_lv = level
         self.player_gold = player_gold
-        self.player_armor = 10
-        self.player_attack = 10
+        self.player_armor = player_armor
+        self.player_attack = player_attack
         self.camera = pygame.math.Vector2(0, 0)
         self.current_camera_position = pygame.math.Vector2(0, 0)
         self.camera_speed = self.speed/5
@@ -32,9 +32,10 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.death_animation = False
         self.skill_points = player_skill_points
-        self.basic_attack_cooldown = 1000
         self.skill_group = SkillGroup()
         self.skill_group.empty()
+        self.basic_attack_animation = False
+        self.channeling = False
         if character == 'Knight':
             self.image = knight_right
             self.image_right = knight_right
@@ -57,12 +58,28 @@ class Player(pygame.sprite.Sprite):
             self.image_death_scaled = angel_death_scaled
             self.player_left_stand_sprites = angel_left_stand_sprites
             self.player_right_stand_sprites = angel_right_stand_sprites
-            self.player_left_sprites = angel_left_sprites
-            self.player_right_sprites = angel_right_sprites
+            self.player_left_sprites = angel_left_move_sprites
+            self.player_right_sprites = angel_right_move_sprites
             self.player_left_death_sprites = angel_left_death_sprites
             self.player_right_death_sprites = angel_right_death_sprites
+            self.player_left_basic_attack_sprites = angel_left_basic_attack_sprites
+            self.player_right_basic_attack_sprites = angel_right_basic_attack_sprites
+            self.player_left_explosion_sprites = angel_left_explosion_sprites
+            self.player_right_explosion_sprites = angel_right_explosion_sprites
             self.animation_timer = 0.1
             self.basic_attack_icon = angel_basic_attack_icon
+            self.in_game_skill3 = in_game_angel_skill3_icon
+            self.in_game_skill6 = in_game_angel_skill6_icon
+            self.in_game_skill9 = in_game_angel_skill9_icon
+            self.in_game_skill12 = in_game_angel_skill12_icon
+            self.basic_attack_cooldown = 1000
+            self.skill3_cooldown = 1000
+            self.skill6_cooldown = 1000
+            self.skill9_cooldown = 1000
+            self.skill12_cooldown = 1000
+            self.skill3_duration = 1000
+            self.skill6_duration = 1000
+            self.skill9_duration = 1000
             self.skill1 = Skill(1, (75, 75), tree_angel_skill1_icon, self.skill_group, self, True)
             self.skill2 = Skill(2, (75, 430), tree_angel_skill2_icon, self.skill_group, self, True)
             self.skill3 = Skill(3, (75, 785), tree_angel_skill3_icon, self.skill_group, self, True)
@@ -131,6 +148,7 @@ class Player(pygame.sprite.Sprite):
             self.player_right_death_sprites = swordsman_right_death_sprites
             self.animation_timer = 0.1
             self.basic_attack_icon = swordsman_basic_attack_icon
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
 
     def move(self, up=False, down=False, left=False, right=False):
@@ -225,7 +243,7 @@ class Player(pygame.sprite.Sprite):
                 self.camera.y += abs(self.current_camera_position.y)/20
 
     def input(self):
-        if self.alive:
+        if self.alive and self.channeling is False:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_w] and keys[pygame.K_s]:
                 self.direction.y = 0
@@ -258,6 +276,9 @@ class Player(pygame.sprite.Sprite):
             new_pos = self.rect.center + self.direction * self.speed
             if math.hypot(new_pos.x - boundary_center[0], new_pos.y - boundary_center[1]) <= boundary_radius:
                 self.rect.center += self.direction * self.speed
+        else:
+            self.handle_camera(0, self.camera.y, False)
+            self.handle_camera(self.camera.x, 0, False)
 
     def update(self):
         self.input()

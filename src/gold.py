@@ -20,6 +20,7 @@ class Gold(pygame.sprite.Sprite):
         self.time = 0
         self.transparency = 255
         self.attracted = False
+        self.mask = pygame.mask.from_surface(self.image)
 
     def animation(self):
         if self.attracted is False:
@@ -30,7 +31,7 @@ class Gold(pygame.sprite.Sprite):
             self.shadow.set_alpha(self.transparency)
 
     def magnet(self):
-        if abs(self.rect.center[0] - self.player.rect.center[0]) < 150 and abs(self.rect.center[1] - self.player.rect.center[1]) < 150:
+        if abs(self.rect.center[0] - self.player.rect.center[0]) < 150 and abs(self.rect.center[1] - self.player.rect.center[1]) < 150 and self.player.alive:
             self.attracted = True
             x_range = self.player.rect.centerx - self.rect.centerx
             y_range = self.player.rect.centery - self.rect.centery
@@ -45,8 +46,9 @@ class Gold(pygame.sprite.Sprite):
 
     def collision(self):
         if self.rect.colliderect(self.player.rect):
-            self.kill()
-            self.player.player_gold += self.value
+            if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
+                self.kill()
+                self.player.player_gold += self.value
 
     def update(self):
         self.collision()

@@ -22,12 +22,13 @@ class PlayerGroup(pygame.sprite.GroupSingle):
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset + player.camera
             if sprite.alive and sprite.death_animation is False:
-                self.ghost_offset_pos.x = offset_pos.x
-                self.ghost_offset_pos.y = offset_pos.y
+                self.ghost_offset_pos.x = offset_pos.x + 50
+                self.ghost_offset_pos.y = offset_pos.y + 50
             if sprite.alive is False and sprite.death_animation:
                 self.ghost_offset_pos.y -= 1
                 self.display.blit(sprite.ghost_image, self.ghost_offset_pos)
-            self.display.blit(sprite.image, offset_pos)
+            if sprite.basic_attack_animation is False and sprite.channeling is False:
+                self.display.blit(sprite.image, offset_pos)
             if sprite.current_orientation == "right" and sprite.alive is True:
                 self.current_sprite += sprite.animation_timer
                 if self.current_sprite >= len(sprite.player_right_stand_sprites):
@@ -38,6 +39,7 @@ class PlayerGroup(pygame.sprite.GroupSingle):
                 if self.current_sprite >= len(sprite.player_left_stand_sprites):
                     self.current_sprite = 0
                 sprite.image = sprite.player_left_stand_sprites[int(self.current_sprite)]
+            sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
 class EnemyGroup(pygame.sprite.Group):
@@ -91,6 +93,7 @@ class EnemyGroup(pygame.sprite.Group):
             self.display.blit(hp_bar_under, (offset_pos.x + 5, offset_pos.y - 15))
             self.display.blit(hp_bar, (offset_pos.x + 5, offset_pos.y - 15))
             self.display.blit(sprite.image, offset_pos)
+            sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
 class DeadEnemyGroup(pygame.sprite.Group):
@@ -130,6 +133,12 @@ class AttacksGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset + player.camera
             self.display.blit(sprite.image, offset_pos)
+            sprite.mask = pygame.mask.from_surface(sprite.image)
+
+
+class PassivesGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
 
 
 class ItemGroup(pygame.sprite.Group):
@@ -152,6 +161,7 @@ class ItemGroup(pygame.sprite.Group):
             if sprite.attracted is False:
                 self.display.blit(sprite.shadow, shadow_offset_pos)
             self.display.blit(sprite.image, offset_pos)
+            sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
 class SkillGroup(pygame.sprite.Group):
@@ -191,10 +201,25 @@ class SkillGroup(pygame.sprite.Group):
                                 sprite.added_skill_point1 = True
                             sprite.player.skill_points -= 1
                         sprite.clicked = True
-            if sprite.added_skill_point2:
-                temp_id = sprite.id
+            if sprite.added_skill_point2 and sprite.id in [1, 2, 4, 5, 6, 9]:
                 for other_sprite in self.sprites():
-                    if other_sprite.id == temp_id + 3:
+                    if other_sprite.id == sprite.id + 3:
                         other_sprite.skill_availability_bool = True
+            if sprite.added_skill_point2 and sprite.id in [3, 7, 8]:
+                skills_availability = [False for _ in range(12)]
+                for other_sprite, x in zip(self.sprites(), range(12)):
+                    skills_availability[x] = other_sprite.added_skill_point2
+                    if sprite.id == 3:
+                        if skills_availability[1] is True:
+                            if other_sprite.id == sprite.id + 3:
+                                other_sprite.skill_availability_bool = True
+                    if sprite.id == 7:
+                        if skills_availability[7] is True:
+                            if other_sprite.id == sprite.id + 3:
+                                other_sprite.skill_availability_bool = True
+                    if sprite.id == 8:
+                        if skills_availability[8] is True:
+                            if other_sprite.id == sprite.id + 3:
+                                other_sprite.skill_availability_bool = True
             if pygame.mouse.get_pressed()[0] == 0:
                 sprite.clicked = False

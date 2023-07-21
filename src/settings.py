@@ -43,14 +43,15 @@ boundary_radius = 5000
 boundary_center = (WIDTH / 2, HEIGHT / 2)
 
 # player settings
-PLAYER_HEIGHT = 100
-PLAYER_WIDTH = 100
+PLAYER_WIDTH, PLAYER_HEIGHT = 200, 200
 player_max_hp = 10000
 player_xp = 0
 level = 1
 needed_player_xp = 1000
 player_speed = 10
 player_gold = 0
+player_armor = 10
+player_attack = 10
 player_skill_points = 100
 
 # item settings

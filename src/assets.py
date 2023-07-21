@@ -7,6 +7,7 @@ arena_background = pygame.image.load('res/arena_background.png').convert_alpha()
 cursor = pygame.transform.scale(pygame.image.load('res/cursor.png').convert_alpha(), (48, 48))
 ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
                  pygame.image.load('res/ghost2.png').convert_alpha()]
+sprite_width, sprite_height = 200, 200
 
 # minimap assets
 inventory_minimap_background = pygame.transform.scale(arena_background, (970, 970))
@@ -45,34 +46,71 @@ knight_left_stand_sprites = [pygame.image.load('res/knight_stand_left1.png').con
 knight_right_stand_sprites = [pygame.image.load('res/knight_stand_right1.png').convert_alpha(),
                               pygame.image.load('res/knight_stand_right2.png').convert_alpha()]
 
-# angel assets
-angel_right = pygame.image.load('res/angel_move_right3.png').convert_alpha()
+# test angel assets
+angel_sprite_sheet_left = pygame.image.load('res/angel_sprite_sheet_left.png').convert_alpha()
+angel_sprite_sheet_right = pygame.image.load('res/angel_sprite_sheet_right.png').convert_alpha()
+angel_left_stand_sprites, angel_right_stand_sprites = [], []
+angel_left_move_sprites, angel_right_move_sprites = [], []
+angel_left_death_sprites, angel_right_death_sprites = [], []
+angel_left_game_start_sprites, angel_right_game_start_sprites = [], []
+angel_left_basic_attack_sprites, angel_right_basic_attack_sprites = [], []
+angel_divine_left_stand_sprites, angel_divine_right_stand_sprites = [], []
+angel_divine_left_move_sprites, angel_divine_right_move_sprites = [], []
+angel_divine_left_basic_attack_sprites, angel_divine_right_basic_attack_sprites = [], []
+angel_left_resurrect_sprites, angel_right_resurrect_sprites = [], []
+angel_left_explosion_sprites, angel_right_explosion_sprites = [], []
+angel_divine_left_explosion_sprites, angel_divine_right_explosion_sprites = [], []
+for row in range(4):
+    sprite_rect = pygame.Rect(row * sprite_width, 0 * sprite_height, sprite_width, sprite_height)
+    angel_left_stand_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_stand_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(3):
+    sprite_rect = pygame.Rect(row * sprite_width, 1 * sprite_height, sprite_width, sprite_height)
+    angel_left_move_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_move_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(6):
+    sprite_rect = pygame.Rect(row * sprite_width, 2 * sprite_height, sprite_width, sprite_height)
+    angel_left_death_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_death_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(7):
+    sprite_rect = pygame.Rect(row * sprite_width, 3 * sprite_height, sprite_width, sprite_height)
+    angel_left_game_start_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_game_start_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(3):
+    sprite_rect = pygame.Rect(row * sprite_width, 4 * sprite_height, sprite_width, sprite_height)
+    angel_left_basic_attack_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_basic_attack_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(4):
+    sprite_rect = pygame.Rect(row * sprite_width, 5 * sprite_height, sprite_width, sprite_height)
+    angel_divine_left_stand_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_divine_right_stand_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(3):
+    sprite_rect = pygame.Rect(row * sprite_width, 6 * sprite_height, sprite_width, sprite_height)
+    angel_divine_left_move_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_divine_right_move_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(3):
+    sprite_rect = pygame.Rect(row * sprite_width, 7 * sprite_height, sprite_width, sprite_height)
+    angel_divine_left_basic_attack_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_divine_right_basic_attack_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(4):
+    sprite_rect = pygame.Rect(row * sprite_width, 8 * sprite_height, sprite_width, sprite_height)
+    angel_left_resurrect_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_resurrect_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+angel_left_resurrect_sprites.append(angel_left_game_start_sprites)
+angel_right_resurrect_sprites.append(angel_right_game_start_sprites)
+for row in range(6):
+    sprite_rect = pygame.Rect(row * sprite_width, 9 * sprite_height, sprite_width, sprite_height)
+    angel_left_explosion_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_explosion_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+for row in range(6):
+    sprite_rect = pygame.Rect(row * sprite_width, 10 * sprite_height, sprite_width, sprite_height)
+    angel_divine_left_explosion_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_divine_right_explosion_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+angel_right = angel_right_game_start_sprites[2]
 angel_right_scaled = pygame.transform.scale(angel_right, (300, 300))
 angel_right_menu = pygame.transform.scale(angel_right, (400, 400))
-angel_death = pygame.image.load('res/angel_death.png').convert_alpha()
+angel_death = angel_right_death_sprites[5]
 angel_death_scaled = pygame.transform.scale(angel_death, (300, 300))
-angel_left_sprites = [pygame.image.load('res/angel_move_left1.png').convert_alpha(),
-                      pygame.image.load('res/angel_move_left2.png').convert_alpha(),
-                      pygame.image.load('res/angel_move_left3.png').convert_alpha(),
-                      pygame.image.load('res/angel_move_left4.png').convert_alpha()]
-angel_right_sprites = [pygame.image.load('res/angel_move_right1.png').convert_alpha(),
-                       pygame.image.load('res/angel_move_right2.png').convert_alpha(),
-                       pygame.image.load('res/angel_move_right3.png').convert_alpha(),
-                       pygame.image.load('res/angel_move_right4.png').convert_alpha()]
-angel_left_death_sprites = [pygame.image.load('res/angel_death_left1.png').convert_alpha(),
-                            pygame.image.load('res/angel_death_left2.png').convert_alpha(),
-                            pygame.image.load('res/angel_death_left3.png').convert_alpha(),
-                            pygame.image.load('res/angel_death_left4.png').convert_alpha(),
-                            pygame.image.load('res/angel_death_left5.png').convert_alpha(),
-                            pygame.image.load('res/angel_death_left6.png').convert_alpha()]
-angel_right_death_sprites = [pygame.image.load('res/angel_death_right1.png').convert_alpha(),
-                             pygame.image.load('res/angel_death_right2.png').convert_alpha(),
-                             pygame.image.load('res/angel_death_right3.png').convert_alpha(),
-                             pygame.image.load('res/angel_death_right4.png').convert_alpha(),
-                             pygame.image.load('res/angel_death_right5.png').convert_alpha(),
-                             pygame.image.load('res/angel_death_right6.png').convert_alpha()]
-angel_left_stand_sprites = angel_left_sprites
-angel_right_stand_sprites = angel_right_sprites
 
 # assassin assets
 assassin_right = pygame.image.load('res/assassin_stand_right1.png').convert_alpha()
@@ -305,11 +343,21 @@ green_enemy_right_blow_sprites = [pygame.image.load('res/green_enemy_blow_right1
                                   pygame.image.load('res/green_enemy_blow_right4.png').convert_alpha(),
                                   pygame.image.load('res/green_enemy_blow_right5.png').convert_alpha()]
 
+# skills arrows
+arrow_right = pygame.image.load('res/arrow_right.png').convert_alpha()
+arrow_top_right = pygame.image.load('res/arrow_top_right.png').convert_alpha()
+arrow_bottom_right = pygame.image.load('res/arrow_bottom_right.png').convert_alpha()
+
 # knight skills assets
 knight_basic_attack_icon = pygame.image.load('res/knight_basic_attack_icon.png').convert_alpha()
 
 # angel skills assets
+angel_skill3_animation = pygame.image.load('res/angel_skill3_animation.png').convert_alpha()
 angel_basic_attack_icon = pygame.image.load('res/angel_basic_attack_icon.png').convert_alpha()
+in_game_angel_skill3_icon = pygame.image.load('res/angel_skill3_icon.png').convert_alpha()
+in_game_angel_skill6_icon = pygame.image.load('res/angel_skill6_icon.png').convert_alpha()
+in_game_angel_skill9_icon = pygame.image.load('res/angel_skill9_icon.png').convert_alpha()
+in_game_angel_skill12_icon = pygame.image.load('res/angel_skill12_icon.png').convert_alpha()
 tree_angel_skill1_icon = pygame.transform.scale(pygame.image.load('res/angel_skill1_icon.png').convert_alpha(), (200, 200))
 tree_angel_skill2_icon = pygame.transform.scale(pygame.image.load('res/angel_skill2_icon.png').convert_alpha(), (200, 200))
 tree_angel_skill3_icon = pygame.transform.scale(pygame.image.load('res/angel_skill3_icon.png').convert_alpha(), (200, 200))

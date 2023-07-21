@@ -33,26 +33,26 @@ class RedEnemy(pygame.sprite.Sprite):
         self.hit_box = self.rect
         self.mass = 1
         self.restitution = 0.8
+        self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
         if self.current_orientation == "right":
             self.move_right()
         if self.current_orientation == "left":
             self.move_left()
+        self.move_def()
 
     def move_right(self):
         self.current_sprite += 0.05
         if self.current_sprite >= len(self.red_enemy_right_sprites):
             self.current_sprite = 0
         self.image = self.red_enemy_right_sprites[int(self.current_sprite)]
-        self.move_def()
 
     def move_left(self):
         self.current_sprite += 0.05
         if self.current_sprite >= len(self.red_enemy_left_sprites):
             self.current_sprite = 0
         self.image = self.red_enemy_left_sprites[int(self.current_sprite)]
-        self.move_def()
 
     def move_def(self):
         x_range = self.player.rect.centerx - self.rect.centerx
@@ -65,31 +65,21 @@ class RedEnemy(pygame.sprite.Sprite):
         y_speed = self.speed * y_range
         self.rect.x += x_speed
         self.rect.y += y_speed
-        if self.rect.right > self.player.rect.right and self.rect.top > self.player.rect.top:
+        if self.rect.centerx > self.player.rect.centerx:
             self.current_orientation = "left"
-        if self.rect.right > self.player.rect.right and self.rect.top < self.player.rect.top:
-            self.current_orientation = "left"
-        if self.rect.right < self.player.rect.right and self.rect.top > self.player.rect.top:
-            self.current_orientation = "right"
-        if self.rect.right < self.player.rect.right and self.rect.top < self.player.rect.top:
-            self.current_orientation = "right"
-        if self.rect.right > self.player.rect.right and self.rect.top == self.player.rect.top:
-            self.current_orientation = "left"
-        if self.rect.right < self.player.rect.right and self.rect.top == self.player.rect.top:
+        if self.rect.centerx < self.player.rect.centerx:
             self.current_orientation = "right"
 
     def detect_collision(self):
         if self.rect.colliderect(self.player.rect):
-            self.player.player_current_hp -= red_enemy_damage
-            if self.current_orientation == "right":
-                self.right_attack_animation()
-            if self.current_orientation == "left":
-                self.left_attack_animation()
-        if not self.rect.colliderect(self.player.rect):
+            if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
+                self.player.player_current_hp -= red_enemy_damage
+                if self.current_orientation == "right":
+                    self.right_attack_animation()
+                if self.current_orientation == "left":
+                    self.left_attack_animation()
+        if not self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
             self.move()
-        for x in self.attack_group:
-            if self.rect.colliderect(x.rect):
-                self.hp -= x.damage
 
     def left_attack_animation(self):
         self.current_sprite += 0.1
