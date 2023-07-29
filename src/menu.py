@@ -91,7 +91,6 @@ class Menu:
                     self.clicked = True
 
             if menu_state == 'character_choice':
-                from main import Main
                 if self.knight_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Knight'
                     for button in self.character_button_list:
@@ -159,7 +158,8 @@ class Menu:
                         self.clicked = True
 
                 if self.play_button.draw(screen) and self.clicked is False and self.chose_made is True:
-                    main = Main(True, self.chosen_character)
+                    from main import Main
+                    main = Main(self.chosen_character)
                     main.run()
                     self.clicked = True
 
@@ -172,6 +172,8 @@ class Menu:
                         button.rect.x = self.characters_buttons_positions[x]
                     self.chose_made = False
                     self.clicked = True
+
+                self.character_info(self.chosen_character)
 
             # show custom cursor on screen
             mouse_pos = pygame.mouse.get_pos()
@@ -193,6 +195,43 @@ class Menu:
                 self.characters_image_positions = [position - 615 for position in self.characters_image_positions]
                 for button in self.character_button_list:
                     button.rect.x -= 615
+
+    def character_info(self, character):
+        if self.chose_made:
+            if character == 'Knight':
+                screen.blit(bigger_font.render(str(knight_stats["health"]), False, 'Black'), (800, 635))
+                screen.blit(bigger_font.render(str(knight_stats["attack"]), False, 'Black'), (800, 720))
+                screen.blit(bigger_font.render(str(knight_stats["armor"]), False, 'Black'), (1070, 635))
+                screen.blit(bigger_font.render(str(knight_stats["speed"]), False, 'Black'), (1070, 720))
+            if character == 'Angel':
+                screen.blit(bigger_font.render(str(angel_stats["health"]), False, 'Black'), (800, 635))
+                screen.blit(bigger_font.render(str(angel_stats["attack"]), False, 'Black'), (800, 720))
+                screen.blit(bigger_font.render(str(angel_stats["armor"]), False, 'Black'), (1070, 635))
+                screen.blit(bigger_font.render(str(angel_stats["speed"]), False, 'Black'), (1070, 720))
+            if character == 'Assassin':
+                screen.blit(bigger_font.render(str(assassin_stats["health"]), False, 'Black'), (800, 635))
+                screen.blit(bigger_font.render(str(assassin_stats["attack"]), False, 'Black'), (800, 720))
+                screen.blit(bigger_font.render(str(assassin_stats["armor"]), False, 'Black'), (1070, 635))
+                screen.blit(bigger_font.render(str(assassin_stats["speed"]), False, 'Black'), (1070, 720))
+            if character == 'Mage':
+                screen.blit(bigger_font.render(str(mage_stats["health"]), False, 'Black'), (800, 635))
+                screen.blit(bigger_font.render(str(mage_stats["attack"]), False, 'Black'), (800, 720))
+                screen.blit(bigger_font.render(str(mage_stats["armor"]), False, 'Black'), (1070, 635))
+                screen.blit(bigger_font.render(str(mage_stats["speed"]), False, 'Black'), (1070, 720))
+            if character == 'Necromancer':
+                screen.blit(bigger_font.render(str(necromancer_stats["health"]), False, 'Black'), (800, 635))
+                screen.blit(bigger_font.render(str(necromancer_stats["attack"]), False, 'Black'), (800, 720))
+                screen.blit(bigger_font.render(str(necromancer_stats["armor"]), False, 'Black'), (1070, 635))
+                screen.blit(bigger_font.render(str(necromancer_stats["speed"]), False, 'Black'), (1070, 720))
+            if character == 'Swordsman':
+                screen.blit(bigger_font.render(str(swordsman_stats["health"]), False, 'Black'), (800, 635))
+                screen.blit(bigger_font.render(str(swordsman_stats["attack"]), False, 'Black'), (800, 720))
+                screen.blit(bigger_font.render(str(swordsman_stats["armor"]), False, 'Black'), (1070, 635))
+                screen.blit(bigger_font.render(str(swordsman_stats["speed"]), False, 'Black'), (1070, 720))
+            screen.blit(health, (690, 615))
+            screen.blit(attack_damage, (690, 700))
+            screen.blit(armor, (960, 615))
+            screen.blit(movement_speed, (960, 700))
 
     def moving_background(self):
         if -8080 < self.arena_x < 0 and -8920 < self.arena_y < 0:

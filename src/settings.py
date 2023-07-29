@@ -28,10 +28,10 @@ in_game_minimap_surface.set_alpha(255)
 game_active = False
 pygame.init()
 clock = pygame.time.Clock()
-font = pygame.font.Font("res/font.ttf", 35)
 bigger_font = pygame.font.Font("res/font.ttf", 65)
 menu_font = pygame.font.Font("res/font.ttf", 60)
-skill_font = pygame.font.Font("res/font.ttf", 25)
+title_font = pygame.font.Font("res/font.ttf", 40)
+font = pygame.font.Font("res/font.ttf", 35)
 hp_text = font.render('HP', False, 'Black')
 xp_text = font.render('LEVEL', False, 'Black')
 death_text = bigger_font.render('YOU DIED', False, 'Black')
@@ -44,31 +44,73 @@ boundary_center = (WIDTH / 2, HEIGHT / 2)
 
 # player settings
 PLAYER_WIDTH, PLAYER_HEIGHT = 200, 200
-player_max_hp = 10000
 player_xp = 0
 level = 1
 needed_player_xp = 1000
-player_speed = 10
 player_gold = 0
-player_armor = 10
-player_attack = 10
 player_skill_points = 100
-
-# item settings
-health_value = 100
 
 # enemy settings
 enemy_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(enemy_timer, 500)
 
+# character settings
+knight_stats = {
+    "health": 0,
+    "speed": 0,
+    "attack": 0,
+    "armor": 0
+}
+
+angel_stats = {
+    "health": 100,
+    "speed": 10,
+    "attack": 5,
+    "armor": 0
+}
+
+assassin_stats = {
+    "health": 0,
+    "speed": 0,
+    "attack": 0,
+    "armor": 0
+}
+
+mage_stats = {
+    "health": 0,
+    "speed": 0,
+    "attack": 0,
+    "armor": 0
+}
+
+necromancer_stats = {
+    "health": 0,
+    "speed": 0,
+    "attack": 0,
+    "armor": 0
+}
+
+swordsman_stats = {
+    "health": 0,
+    "speed": 0,
+    "attack": 0,
+    "armor": 0
+}
+
 # red enemy settings
-red_enemy_hp = 100
-red_enemy_speed = 100
-red_enemy_xp = 500
-red_enemy_damage = 1
+red_enemy_stats = {
+    "health": 10,
+    "speed": 100,
+    "attack": 0.1,
+    "armor": 10,
+    "xp": 500
+}
 
 # green enemy settings
-green_enemy_hp = 100
-green_enemy_speed = 250
-green_enemy_xp = 1000
-green_enemy_damage = 10
+green_enemy_stats = {
+    "health": 10,
+    "speed": 250,
+    "attack": 10,
+    "armor": 10,
+    "xp": 1000
+}

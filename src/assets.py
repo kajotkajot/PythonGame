@@ -72,10 +72,8 @@ for row in range(6):
     sprite_rect = pygame.Rect(row * sprite_width, 2 * sprite_height, sprite_width, sprite_height)
     angel_left_death_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
     angel_right_death_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
-for row in range(7):
-    sprite_rect = pygame.Rect(row * sprite_width, 3 * sprite_height, sprite_width, sprite_height)
-    angel_left_game_start_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
-    angel_right_game_start_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+    angel_left_resurrect_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_resurrect_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
 for row in range(3):
     sprite_rect = pygame.Rect(row * sprite_width, 4 * sprite_height, sprite_width, sprite_height)
     angel_left_basic_attack_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
@@ -96,8 +94,12 @@ for row in range(4):
     sprite_rect = pygame.Rect(row * sprite_width, 8 * sprite_height, sprite_width, sprite_height)
     angel_left_resurrect_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
     angel_right_resurrect_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
-angel_left_resurrect_sprites.append(angel_left_game_start_sprites)
-angel_right_resurrect_sprites.append(angel_right_game_start_sprites)
+for row in range(7):
+    sprite_rect = pygame.Rect(row * sprite_width, 3 * sprite_height, sprite_width, sprite_height)
+    angel_left_game_start_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_game_start_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
+    angel_left_resurrect_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
+    angel_right_resurrect_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
 for row in range(6):
     sprite_rect = pygame.Rect(row * sprite_width, 9 * sprite_height, sprite_width, sprite_height)
     angel_left_explosion_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
@@ -106,7 +108,7 @@ for row in range(6):
     sprite_rect = pygame.Rect(row * sprite_width, 10 * sprite_height, sprite_width, sprite_height)
     angel_divine_left_explosion_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
     angel_divine_right_explosion_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
-angel_right = angel_right_game_start_sprites[2]
+angel_right = angel_right_stand_sprites[0]
 angel_right_scaled = pygame.transform.scale(angel_right, (300, 300))
 angel_right_menu = pygame.transform.scale(angel_right, (400, 400))
 angel_death = angel_right_death_sprites[5]
@@ -353,6 +355,13 @@ knight_basic_attack_icon = pygame.image.load('res/knight_basic_attack_icon.png')
 
 # angel skills assets
 angel_skill3_animation = pygame.image.load('res/angel_skill3_animation.png').convert_alpha()
+angel_skill9_animation = pygame.image.load('res/angel_skill9_animation.png').convert_alpha()
+angel_skill9_sprites = [angel_skill9_animation,
+                        pygame.transform.scale(angel_skill9_animation, (300, 300)),
+                        pygame.transform.scale(angel_skill9_animation, (400, 400)),
+                        pygame.transform.scale(angel_skill9_animation, (500, 500))]
+angel_skill12_animation = pygame.image.load('res/angel_skill12_animation.png').convert_alpha()
+angel_skill12_hit_box = pygame.image.load('res/angel_skill12_hit_box.png').convert_alpha()
 angel_basic_attack_icon = pygame.image.load('res/angel_basic_attack_icon.png').convert_alpha()
 in_game_angel_skill3_icon = pygame.image.load('res/angel_skill3_icon.png').convert_alpha()
 in_game_angel_skill6_icon = pygame.image.load('res/angel_skill6_icon.png').convert_alpha()
@@ -388,12 +397,27 @@ swordsman_basic_attack_animation_sprites = [pygame.image.load('res/swordsman_bas
                                             pygame.image.load('res/swordsman_basic_attack_animation4.png').convert_alpha(),
                                             pygame.image.load('res/swordsman_basic_attack_animation5.png').convert_alpha()]
 
+# skills descriptions
+angel_skill1_description = "You gain 1/2/3 movement speed and can fly over obstacles"
+angel_skill2_description = "You gain 10/25/50% bonus max hp"
+angel_skill3_description = "You can shoot laser dealing damage equal 100/125/150% of your attack damage. 5 sec cooldown"
+angel_skill4_description = "You gain 10/20/30% bonus attack damage"
+angel_skill5_description = "Attacking enemies take damage equal to your 50/75/100% attack damage"
+angel_skill6_description = "You ignore 20/30/40% armor for 6/8/10 seconds. 15 sec cooldown"
+angel_skill7_description = "You reduce taken damage by 5/10/15%."
+angel_skill8_description = "You can revive yourself 1/2/3 times per game with 30% hp"
+angel_skill9_description = "You deal 300/400/500% of your attack damage damage to all enemies on the map"
+angel_skill10_description = "You regenerate 1/2/3% of max hp per 5 seconds"
+angel_skill11_description = "You revive now with 40/50/60% hp and explode (explosion) while reviving"
+angel_skill12_description = "You sent huge pillar of light from the sky dealing damage equal to 200/250/300% of your attack damage over 3 seconds to enemies in it"
+
 # item assets
 health = pygame.image.load('res/health.png').convert_alpha()
 health_potion = pygame.image.load('res/health_potion.png').convert_alpha()
 gold = pygame.image.load('res/gold.png').convert_alpha()
 armor = pygame.image.load('res/armor.png').convert_alpha()
 attack_damage = pygame.image.load('res/attack_damage.png').convert_alpha()
+movement_speed = pygame.image.load('res/movement_speed.png').convert_alpha()
 item_shadow = pygame.image.load('res/item_shadow.png').convert_alpha()
 
 # buttons assets
@@ -407,4 +431,4 @@ button_arrow_image_right = pygame.image.load('res/button_arrow_image_default_rig
 button_arrow_image_right_pressed = pygame.image.load('res/button_arrow_image_active_right.png').convert_alpha()
 button_arrow_image_left = pygame.image.load('res/button_arrow_image_default_left.png').convert_alpha()
 button_arrow_image_left_pressed = pygame.image.load('res/button_arrow_image_active_left.png').convert_alpha()
-skill_description = pygame.transform.scale(button_540x540_image, (450, 605))
+skill_description = pygame.image.load('res/skill_description_background.png').convert_alpha()

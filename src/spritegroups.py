@@ -27,7 +27,7 @@ class PlayerGroup(pygame.sprite.GroupSingle):
             if sprite.alive is False and sprite.death_animation:
                 self.ghost_offset_pos.y -= 1
                 self.display.blit(sprite.ghost_image, self.ghost_offset_pos)
-            if sprite.basic_attack_animation is False and sprite.channeling is False:
+            if sprite.basic_attack_animation is False and sprite.channeling is False and sprite.resurrect_animation is False:
                 self.display.blit(sprite.image, offset_pos)
             if sprite.current_orientation == "right" and sprite.alive is True:
                 self.current_sprite += sprite.animation_timer
@@ -84,7 +84,7 @@ class EnemyGroup(pygame.sprite.Group):
                 if other_sprite != sprite:
                     if sprite.hit_box.colliderect(other_sprite.hit_box):
                         self.handle_enemy_collision(sprite, other_sprite)
-            hp_division = red_enemy_hp / (abs(sprite.rect.left - sprite.rect.right) - 10)
+            hp_division = sprite.max_hp / (abs(sprite.rect.left - sprite.rect.right) - 10)
             hp_bar = pygame.Surface([(sprite.hp / hp_division), 5])
             hp_bar_under = pygame.Surface([abs(sprite.rect.left - sprite.rect.right) - 10, 5])
             hp_bar.fill("red")
@@ -139,6 +139,22 @@ class AttacksGroup(pygame.sprite.Group):
 class PassivesGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
+        self.display = pygame.display.get_surface()
+        self.offset = pygame.math.Vector2()
+        self.half_width = self.display.get_size()[0] / 2
+        self.half_height = self.display.get_size()[1] / 2
+
+    def center_target_camera(self, target):
+        self.offset.x = target.rect.centerx - self.half_width
+        self.offset.y = target.rect.centery - self.half_height
+
+    def custom_draw(self, player):
+        self.center_target_camera(player)
+        for sprite in self.sprites():
+            if sprite.type == "active" and player.resurrect_animation:
+                offset_pos = sprite.rect.topleft - self.offset + player.camera
+                self.display.blit(sprite.image, offset_pos)
+                sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
 class ItemGroup(pygame.sprite.Group):
@@ -169,6 +185,22 @@ class SkillGroup(pygame.sprite.Group):
         super().__init__()
         self.display = pygame.display.get_surface()
 
+    @staticmethod
+    def wrap_text(text, temp_font, max_width):
+        words = text.split(' ')
+        lines = []
+        current_line = ''
+        for word in words:
+            test_line = current_line + word + ' '
+            test_width, _ = temp_font.size(test_line)
+            if test_width > max_width:
+                lines.append(current_line)
+                current_line = word + ' '
+            else:
+                current_line = test_line
+        lines.append(current_line)
+        return lines
+
     def custom_draw(self):
         for sprite in self.sprites():
             mouse_pos = pygame.mouse.get_pos()
@@ -186,19 +218,33 @@ class SkillGroup(pygame.sprite.Group):
                     sprite.clicked = True
                     sprite.action = True
             if sprite.action:
-                screen.blit(sprite.skill_description, (1420, 65))
+                screen.blit(sprite.skill_description_background, (1420, 65))
+                screen.blit(sprite.title, (1645-sprite.title_width, 85))
+                lines_of_text = self.wrap_text(sprite.description, font, 400)
+                y_pos = 135
+                for line in lines_of_text:
+                    text_to_surface = font.render(line, False, "black")
+                    screen.blit(text_to_surface, (1450, y_pos))
+                    height = text_to_surface.get_height() + 5
+                    y_pos += height
                 if sprite.skill_availability_bool and sprite.player.skill_points > 0 and sprite.added_skill_point3 is False:
                     if sprite.add_skill_button.draw(screen) and sprite.clicked is False:
                         if sprite.player.skill_points > 0:
                             if sprite.added_skill_point1 and sprite.added_skill_point2 and sprite.added_skill_point3 is False:
                                 sprite.skill_point3.fill("green")
                                 sprite.added_skill_point3 = True
+                                sprite.current_value = sprite.point3_value
+                                sprite.level_up()
                             if sprite.added_skill_point1 and sprite.added_skill_point2 is False:
                                 sprite.skill_point2.fill("green")
                                 sprite.added_skill_point2 = True
+                                sprite.current_value = sprite.point2_value
+                                sprite.level_up()
                             if sprite.added_skill_point1 is False:
                                 sprite.skill_point1.fill("green")
                                 sprite.added_skill_point1 = True
+                                sprite.current_value = sprite.point1_value
+                                sprite.level_up()
                             sprite.player.skill_points -= 1
                         sprite.clicked = True
             if sprite.added_skill_point2 and sprite.id in [1, 2, 4, 5, 6, 9]:

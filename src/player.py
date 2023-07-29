@@ -2,25 +2,34 @@ import math
 import numpy as np
 from settings import *
 from assets import *
-from skill import Skill
+from src.angelfiles.angelskills import AngelSkill
+from src.angelfiles.angelskill8 import AngelSkill8
+from src.angelfiles.angelskill10 import AngelSkill10
 from spritegroups import SkillGroup
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, group, character):
+    def __init__(self, group, character, passive_group, attack_group, enemy_group):
         super().__init__(group)
-        self.speed = player_speed
         self.direction = pygame.math.Vector2()
         self.current_death_sprite = 0
         self.current_sprite = 0
         self.current_orientation = "right"
-        self.player_max_hp = player_max_hp
-        self.player_current_hp = player_max_hp
-        self.player_xp = player_xp
-        self.player_lv = level
-        self.player_gold = player_gold
-        self.player_armor = player_armor
-        self.player_attack = player_attack
+        self.xp = player_xp
+        self.level = level
+        self.gold = player_gold
+        self.max_hp = angel_stats["health"]
+        self.current_hp = angel_stats["health"]
+        self.speed = angel_stats["speed"]
+        self.armor = angel_stats["armor"]
+        self.attack = angel_stats["attack"]
+        self.damage_bounce = 0
+        self.armor_reduction = 1
+        self.damage_reduction = 1
+        self.regeneration = 0
+        self.resurrections = 0
+        self.resurrection_value = 0
+        self.explosion_on_death = False
         self.camera = pygame.math.Vector2(0, 0)
         self.current_camera_position = pygame.math.Vector2(0, 0)
         self.camera_speed = self.speed/5
@@ -35,7 +44,9 @@ class Player(pygame.sprite.Sprite):
         self.skill_group = SkillGroup()
         self.skill_group.empty()
         self.basic_attack_animation = False
+        self.resurrect_animation = False
         self.channeling = False
+        self.can_fly = False
         if character == 'Knight':
             self.image = knight_right
             self.image_right = knight_right
@@ -73,25 +84,26 @@ class Player(pygame.sprite.Sprite):
             self.in_game_skill9 = in_game_angel_skill9_icon
             self.in_game_skill12 = in_game_angel_skill12_icon
             self.basic_attack_cooldown = 1000
-            self.skill3_cooldown = 1000
-            self.skill6_cooldown = 1000
-            self.skill9_cooldown = 1000
-            self.skill12_cooldown = 1000
-            self.skill3_duration = 1000
-            self.skill6_duration = 1000
+            self.skill3_cooldown = 5000
+            self.skill6_cooldown = 15000
+            self.skill9_cooldown = 30000
+            self.skill12_cooldown = 10000
+            self.skill3_duration = 3000
+            self.skill6_duration = 4000
             self.skill9_duration = 1000
-            self.skill1 = Skill(1, (75, 75), tree_angel_skill1_icon, self.skill_group, self, True)
-            self.skill2 = Skill(2, (75, 430), tree_angel_skill2_icon, self.skill_group, self, True)
-            self.skill3 = Skill(3, (75, 785), tree_angel_skill3_icon, self.skill_group, self, True)
-            self.skill4 = Skill(4, (430, 75), tree_angel_skill4_icon, self.skill_group, self, False)
-            self.skill5 = Skill(5, (430, 430), tree_angel_skill5_icon, self.skill_group, self, False)
-            self.skill6 = Skill(6, (430, 785), tree_angel_skill6_icon, self.skill_group, self, False)
-            self.skill7 = Skill(7, (785, 75), tree_angel_skill7_icon, self.skill_group, self, False)
-            self.skill8 = Skill(8, (785, 430), tree_angel_skill8_icon, self.skill_group, self, False)
-            self.skill9 = Skill(9, (785, 785), tree_angel_skill9_icon, self.skill_group, self, False)
-            self.skill10 = Skill(10, (1140, 75), tree_angel_skill10_icon, self.skill_group, self, False)
-            self.skill11 = Skill(11, (1140, 430), tree_angel_skill11_icon, self.skill_group, self, False)
-            self.skill12 = Skill(12, (1140, 785), tree_angel_skill12_icon, self.skill_group, self, False)
+            self.skill12_duration = 3000
+            self.skill1 = AngelSkill(1, (75, 75), tree_angel_skill1_icon, self.skill_group, self, True, "WINGS OF LIGHT", angel_skill1_description, 1, 2, 3)
+            self.skill2 = AngelSkill(2, (75, 430), tree_angel_skill2_icon, self.skill_group, self, True, "DIVINE LEAD", angel_skill2_description, 1.1, 1.25, 1.5)
+            self.skill3 = AngelSkill(3, (75, 785), tree_angel_skill3_icon, self.skill_group, self, True, "RAY OF LIGHT", angel_skill3_description, 1, 1.25, 1.5)
+            self.skill4 = AngelSkill(4, (430, 75), tree_angel_skill4_icon, self.skill_group, self, False, "HOLY SWORD", angel_skill4_description, 1.1, 1.2, 1.3)
+            self.skill5 = AngelSkill(5, (430, 430), tree_angel_skill5_icon, self.skill_group, self, False, "DIVINE PUNISHMENT", angel_skill5_description, 0.5, 0.75, 1)
+            self.skill6 = AngelSkill(6, (430, 785), tree_angel_skill6_icon, self.skill_group, self, False, "DIVINE STRENGTH", angel_skill6_description, 0.8, 0.7, 0.6)
+            self.skill7 = AngelSkill(7, (785, 75), tree_angel_skill7_icon, self.skill_group, self, False, "LIGHT BARRIER", angel_skill7_description, 0.95, 0.9, 0.85)
+            self.skill8 = AngelSkill(8, (785, 430), tree_angel_skill8_icon, self.skill_group, self, False, "GUARDIAN ANGEL", angel_skill8_description, 0.3, 0.3, 0.3)
+            self.skill9 = AngelSkill(9, (785, 785), tree_angel_skill9_icon, self.skill_group, self, False, "EXPLOSION", angel_skill9_description, 3, 4, 5)
+            self.skill10 = AngelSkill(10, (1140, 75), tree_angel_skill10_icon, self.skill_group, self, False, "INNER PEACE", angel_skill10_description, 0.01, 0.02, 0.03)
+            self.skill11 = AngelSkill(11, (1140, 430), tree_angel_skill11_icon, self.skill_group, self, False, "BACK FROM THE DEAD", angel_skill11_description, 0.4, 0.5, 0.6)
+            self.skill12 = AngelSkill(12, (1140, 785), tree_angel_skill12_icon, self.skill_group, self, False, "GOD'S WRATH", angel_skill12_description, 2, 2.5, 3)
         if character == 'Assassin':
             self.image = assassin_right
             self.image_right = assassin_right
@@ -150,6 +162,8 @@ class Player(pygame.sprite.Sprite):
             self.basic_attack_icon = swordsman_basic_attack_icon
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
+        self.passive_skill8 = AngelSkill8(self, passive_group, attack_group, enemy_group, False)
+        self.passive_skill10 = AngelSkill10(self, passive_group, False)
 
     def move(self, up=False, down=False, left=False, right=False):
         if up:
@@ -211,8 +225,8 @@ class Player(pygame.sprite.Sprite):
             self.ghost_animation()
 
     def player_alive(self):
-        if self.player_current_hp <= 0:
-            self.player_current_hp = 0
+        if self.current_hp <= 0 and self.resurrections == 0:
+            self.current_hp = 0
             self.death_animation = True
             self.death_check()
             self.alive = False
