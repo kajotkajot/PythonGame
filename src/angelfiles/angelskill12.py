@@ -7,7 +7,7 @@ class AngelSkill12(pygame.sprite.Sprite):
         self.player = player
         self.enemy_group = enemy_group
         self.timer = timer
-        self.damage = self.player.attack * self.player.skill12.current_value
+        self.damage = self.player.attack * self.player.character.skill12.current_value
         self.image = angel_skill12_animation
         self.hit_box = angel_skill12_hit_box
         self.mouse_pos = pygame.mouse.get_pos()
@@ -18,7 +18,7 @@ class AngelSkill12(pygame.sprite.Sprite):
 
     def check_state(self):
         self.current_time = pygame.time.get_ticks()
-        if self.current_time - self.timer > self.player.skill12_duration:
+        if self.current_time - self.timer > self.player.character.skill12_duration:
             self.kill()
 
     def check_collision(self):

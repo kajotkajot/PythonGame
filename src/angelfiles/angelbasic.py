@@ -1,13 +1,13 @@
 from src.settings import *
 
 
-class AngelBasicAttack(pygame.sprite.Sprite):
+class AngelBasic(pygame.sprite.Sprite):
     def __init__(self, player, group, enemy_group):
         super().__init__(group)
         self.player = player
         self.enemy_group = enemy_group
-        self.animation_left_sprites = self.player.player_left_basic_attack_sprites
-        self.animation_right_sprites = self.player.player_right_basic_attack_sprites
+        self.animation_left_sprites = self.player.character.player_left_basic_attack_sprites
+        self.animation_right_sprites = self.player.character.player_right_basic_attack_sprites
         self.current_sprite = 0
         self.image = self.animation_right_sprites[0]
         self.rect = self.image.get_rect().move(self.player.rect.x, self.player.rect.y)

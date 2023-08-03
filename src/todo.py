@@ -4,9 +4,8 @@ Wszyscy:
 - different resolutions
 - enemy poisoning player
 - changing color of hp bar to green when poisoned by an enemy
-- use polygon on skill display
 Kajot:
-- None
+- make simpler code with dictionaries
 Rzepa:
 - use boids algorythm for enemies
 - fix collision function

@@ -1,5 +1,4 @@
 import math
-from src.settings import *
 from src.assets import *
 from random import randint
 from src.itemfiles.health import Health
@@ -10,15 +9,19 @@ from src.itemfiles.healthpotion import HealthPotion
 
 
 class RedEnemy(pygame.sprite.Sprite):
-    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, item_group, player):
+    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, item_group, player, stats):
         super().__init__(enemy_group)
         self.enemy_group = enemy_group
+        self.dead_enemy_group = dead_enemy_group
         self.attack_group = attack_group
         self.item_group = item_group
-        self.dead_enemy_group = dead_enemy_group
         self.player = player
-        self.speed = red_enemy_stats["speed"]
-        self.armor = red_enemy_stats["armor"]
+        self.stats = stats
+        self.hp = self.stats["health"]
+        self.max_hp = self.stats["health"]
+        self.speed = self.stats["speed"]
+        self.damage = self.stats["attack"]
+        self.armor = self.stats["armor"]
         self.image = red_enemy_right
         self.rect = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
         self.red_enemy_left_sprites = red_enemy_left_sprites
@@ -30,9 +33,6 @@ class RedEnemy(pygame.sprite.Sprite):
         self.current_death_sprite = 0
         self.current_sprite = 0
         self.current_orientation = "right"
-        self.hp = red_enemy_stats["health"]
-        self.max_hp = red_enemy_stats["health"]
-        self.damage = red_enemy_stats["attack"]
         self.hit_box = self.rect
         self.mass = 1
         self.restitution = 0.8
@@ -75,7 +75,7 @@ class RedEnemy(pygame.sprite.Sprite):
 
     def detect_collision(self):
         if self.rect.colliderect(self.player.rect):
-            if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)) and self.player.resurrect_animation is False:
+            if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)) and self.player.resurrect_animation is False and self.player.channeling is False:
                 self.hp -= self.damage * self.player.damage_bounce
                 self.player.current_hp -= self.damage * (1-(self.player.armor/(self.player.armor+99))) * self.player.damage_reduction
                 if self.current_orientation == "right":
@@ -137,7 +137,7 @@ class RedEnemy(pygame.sprite.Sprite):
             self.hp = 0
             self.enemy_group.remove(self)
             self.dead_enemy_group.add(self)
-            self.player.xp += red_enemy_stats["xp"]
+            self.player.xp += self.stats["xp"]
 
     def update(self):
         self.is_alive()

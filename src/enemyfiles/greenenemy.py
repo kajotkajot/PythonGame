@@ -1,4 +1,3 @@
-from src.settings import *
 from src.assets import *
 from random import randint
 from src.itemfiles.health import Health
@@ -9,15 +8,19 @@ from src.itemfiles.healthpotion import HealthPotion
 
 
 class GreenEnemy(pygame.sprite.Sprite):
-    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, item_group, player):
+    def __init__(self, enemy_cords, enemy_group, dead_enemy_group, attack_group, item_group, player, stats):
         super().__init__(enemy_group)
         self.enemy_group = enemy_group
+        self.dead_enemy_group = dead_enemy_group
         self.attack_group = attack_group
         self.item_group = item_group
-        self.dead_enemy_group = dead_enemy_group
         self.player = player
-        self.speed = green_enemy_stats["speed"]
-        self.armor = green_enemy_stats["armor"]
+        self.stats = stats
+        self.hp = self.stats["health"]
+        self.max_hp = self.stats["health"]
+        self.speed = self.stats["speed"]
+        self.damage = self.stats["attack"]
+        self.armor = self.stats["armor"]
         self.image = green_enemy_right
         self.rect = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
         self.enemy_left_sprites = green_enemy_left_sprites
@@ -29,9 +32,6 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.current_sprite = 0
         self.current_orientation = "right"
         self.current_direction = "none"
-        self.hp = green_enemy_stats["health"]
-        self.max_hp = green_enemy_stats["health"]
-        self.damage = green_enemy_stats["attack"]
         self.timer = 0
         self.x_range = 0.3
         self.y_range = 0.3
@@ -91,11 +91,11 @@ class GreenEnemy(pygame.sprite.Sprite):
             if self in self.enemy_group:
                 self.enemy_group.remove(self)
                 self.dead_enemy_group.add(self)
-            self.player.xp += green_enemy_stats["xp"]
+            self.player.xp += self.stats["xp"]
 
     def detect_collision(self):
         if self.rect.colliderect(self.player.rect) and not self.speed == 0:
-            if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)) and self.player.resurrect_animation is False:
+            if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)) and self.player.resurrect_animation is False and self.player.channeling is False:
                 self.player.current_hp -= self.damage * (1-(self.player.armor/(self.player.armor+99))) * self.player.damage_reduction
                 if self in self.enemy_group:
                     self.enemy_group.remove(self)
@@ -121,7 +121,7 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.y_range = (abs(self.rect.centery - self.player.rect.centery) + abs(self.rect.centery - self.player.rect.centery)) / 2000
         if self.y_range >= 0.6:
             self.y_range = 0.6
-        self.speed = green_enemy_stats["speed"]
+        self.speed = self.stats["speed"]
         if self.rect.centerx > self.player.rect.centerx:
             if self.rect.centery > self.player.rect.centery:
                 self.current_direction = "top-left"

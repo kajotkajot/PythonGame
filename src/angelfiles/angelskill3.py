@@ -7,12 +7,12 @@ class AngelSkill3(pygame.sprite.Sprite):
         super().__init__(group)
         self.player = player
         self.enemy_group = enemy_group
+        self.timer = timer
         self.image = angel_skill3_animation
         self.rect = self.image.get_rect().move(self.player.rect.centerx, self.player.rect.centery - 50)
-        self.damage = self.player.attack * self.player.skill3.current_value
+        self.damage = self.player.attack * self.player.character.skill3.current_value
         self.current_time = pygame.time.get_ticks()
         self.offset = pygame.Vector2(650, 0)
-        self.timer = timer
         self.mask = pygame.mask.from_surface(self.image)
 
     def check_state(self):
@@ -24,7 +24,7 @@ class AngelSkill3(pygame.sprite.Sprite):
         rotated_offset = self.offset.rotate(-angle)
         self.rect = self.image.get_rect(center=self.player.rect.center + rotated_offset)
         self.current_time = pygame.time.get_ticks()
-        if self.current_time - self.timer > self.player.skill3_duration:
+        if self.current_time - self.timer > self.player.character.skill3_duration:
             self.kill()
 
     def check_collision(self):

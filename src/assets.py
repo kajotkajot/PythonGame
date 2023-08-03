@@ -2,7 +2,6 @@ import pygame
 
 # game assets
 current_state_image = pygame.image.load('res/background.png').convert_alpha()
-blurred_current_state_image = pygame.image.load('res/background.png').convert_alpha()
 arena_background = pygame.image.load('res/arena_background.png').convert_alpha()
 cursor = pygame.transform.scale(pygame.image.load('res/cursor.png').convert_alpha(), (48, 48))
 ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
@@ -391,13 +390,8 @@ necromancer_basic_attack_icon = pygame.image.load('res/necromancer_basic_attack_
 
 # swordsman skills assets
 swordsman_basic_attack_icon = pygame.image.load('res/swordsman_basic_attack_icon.png').convert_alpha()
-swordsman_basic_attack_animation_sprites = [pygame.image.load('res/swordsman_basic_attack_animation1.png').convert_alpha(),
-                                            pygame.image.load('res/swordsman_basic_attack_animation2.png').convert_alpha(),
-                                            pygame.image.load('res/swordsman_basic_attack_animation3.png').convert_alpha(),
-                                            pygame.image.load('res/swordsman_basic_attack_animation4.png').convert_alpha(),
-                                            pygame.image.load('res/swordsman_basic_attack_animation5.png').convert_alpha()]
 
-# skills descriptions
+# angel skills descriptions
 angel_skill1_description = "You gain 1/2/3 movement speed and can fly over obstacles"
 angel_skill2_description = "You gain 10/25/50% bonus max hp"
 angel_skill3_description = "You can shoot laser dealing damage equal 100/125/150% of your attack damage. 5 sec cooldown"

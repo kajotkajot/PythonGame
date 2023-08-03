@@ -30,17 +30,15 @@ pygame.init()
 clock = pygame.time.Clock()
 bigger_font = pygame.font.Font("res/font.ttf", 65)
 menu_font = pygame.font.Font("res/font.ttf", 60)
+skill_font = pygame.font.Font("res/font.ttf", 50)
 title_font = pygame.font.Font("res/font.ttf", 40)
 font = pygame.font.Font("res/font.ttf", 35)
-hp_text = font.render('HP', False, 'Black')
-xp_text = font.render('LEVEL', False, 'Black')
-death_text = bigger_font.render('YOU DIED', False, 'Black')
-death_text_rect = death_text.get_rect(center=(960, 720))
 grey_pause_screen = pygame.Surface([WIDTH, HEIGHT], pygame.SRCALPHA)
 grey_pause_screen.fill((50, 50, 50, 255))
 pygame.mouse.set_visible(False)
 boundary_radius = 5000
 boundary_center = (WIDTH / 2, HEIGHT / 2)
+skill_polygon_surface = pygame.Surface((100, 100), pygame.SRCALPHA)
 
 # player settings
 PLAYER_WIDTH, PLAYER_HEIGHT = 200, 200

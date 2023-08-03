@@ -47,7 +47,7 @@ class Health(pygame.sprite.Sprite):
         if self.rect.colliderect(self.player.rect) and self.player.alive and self.player.resurrect_animation is False:
             if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
                 self.kill()
-                self.player.max_hp += self.value * self.player.skill2.current_value
+                self.player.max_hp += self.value * self.player.character.skill2.current_value
 
     def update(self):
         self.collision()

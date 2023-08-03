@@ -9,11 +9,11 @@ class AngelSkill(pygame.sprite.Sprite):
         self.id = num
         self.position = position
         self.image = image
-        self.title = title_font.render(title, False, "Black")
-        self.title_width = self.title.get_width()/2
-        self.description = description
         self.player = player
         self.skill_availability_bool = skill_availability
+        self.title = title_font.render(title, True, "Black")
+        self.title_width = self.title.get_width()/2
+        self.description = description
         self.skill_border = pygame.Surface([220, 250])
         self.skill_border.fill("black")
         self.skill_description_background = skill_description
@@ -72,7 +72,7 @@ class AngelSkill(pygame.sprite.Sprite):
         self.player.damage_bounce = self.current_value
 
     def skill6(self):
-        self.player.skill6_duration += 2000
+        self.player.character.skill6_duration += 2000
 
     def skill7(self):
         self.player.damage_reduction = self.current_value

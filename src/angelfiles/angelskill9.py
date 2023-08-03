@@ -7,11 +7,11 @@ class AngelSkill9(pygame.sprite.Sprite):
         self.player = player
         self.enemy_group = enemy_group
         self.timer = timer
-        self.damage = self.player.attack * self.player.skill9.current_value
+        self.damage = self.player.attack * self.player.character.skill9.current_value
         self.current_sprite = 0
         self.current_time = pygame.time.get_ticks()
-        self.animation_left_sprites = self.player.player_left_explosion_sprites
-        self.animation_right_sprites = self.player.player_right_explosion_sprites
+        self.animation_left_sprites = self.player.character.player_left_explosion_sprites
+        self.animation_right_sprites = self.player.character.player_right_explosion_sprites
         self.image = self.animation_right_sprites[0]
         self.shockwave_sprite = 0
         self.shockwave_sprites = angel_skill9_sprites

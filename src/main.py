@@ -5,7 +5,7 @@ from random import randint
 from player import Player
 from src.enemyfiles.redenemy import RedEnemy
 from src.enemyfiles.greenenemy import GreenEnemy
-from src.angelfiles.angelbasicattack import AngelBasicAttack
+from src.angelfiles.angelbasic import AngelBasic
 from src.angelfiles.angelskill3 import AngelSkill3
 from src.angelfiles.angelskill6 import AngelSkill6
 from src.angelfiles.angelskill9 import AngelSkill9
@@ -18,24 +18,33 @@ from spritegroups import PlayerGroup, EnemyGroup, DeadEnemyGroup, AttacksGroup, 
 
 class Main:
     def __init__(self, character):
+        # important variables
         self.game_active = False
         self.game_start = True
-        self.blurred_current_state_image = blurred_current_state_image
+        self.pop_up_active = False
+        self.pause_screen = False
+        self.inventory_screen = False
+        self.skill_tree_screen = False
+        self.clicked = False
+
+        # grey screen
+        self.blurred_current_state_image = None
+        self.current_state_image = current_state_image
+
+        # buttons
         self.resume_pause_button = Button('RESUME', 780, 640, button_360x100_image, button_360x100_image_pressed)
         self.controls_button = Button('CONTROLS', 780, 770, button_360x100_image, button_360x100_image_pressed)
         self.quit_button = Button('QUIT', 780, 900, button_360x100_image, button_360x100_image_pressed)
         self.resume_inventory_button = Button('RESUME', 1465, 925, button_360x100_image, button_360x100_image_pressed)
         self.skill_button = Button('SKILLS', 95, 925, button_360x100_image, button_360x100_image_pressed)
         self.skill_tree_back_button = Button('BACK', 1465, 925, button_360x100_image, button_360x100_image_pressed)
+
+        # transparencies and timers
         self.skill_announcement_timer = 0
         self.skill_announcement_transparency = 255
-        self.player_lv = 0
-        self.pop_up_active = False
-        self.pause_screen = False
-        self.inventory_screen = False
-        self.skill_tree_screen = False
         self.pause_screen_transparency = 255
-        self.clicked = False
+
+        # preparing groups and player
         self.enemy_group = EnemyGroup()
         self.player_group = PlayerGroup()
         self.attack_group = AttacksGroup()
@@ -49,26 +58,28 @@ class Main:
         self.item_group.empty()
         self.dead_enemy_group.empty()
         self.player = Player(self.player_group, character, self.passive_group, self.attack_group, self.enemy_group)
-        self.current_time = 0
-        self.skill3 = None
-        self.skill6 = None
-        self.skill9 = None
-        self.skill12 = None
-        self.basic_attack_timer = 0
-        self.skill3_timer = 0
-        self.skill6_timer = 0
-        self.skill9_timer = 0
-        self.skill12_timer = 0
-        self.basic_attack_cooldown = self.player.basic_attack_cooldown
-        self.skill3_cooldown = self.player.skill3_cooldown
-        self.skill6_cooldown = self.player.skill6_cooldown
-        self.skill9_cooldown = self.player.skill9_cooldown
-        self.skill12_cooldown = self.player.skill12_cooldown
-        self.saved_time = 0
-        self.mouse_angle = 0
+
+        # enemy stats
+        self.red_enemy_stats = {key: value for key, value in red_enemy_stats.items()}
+        self.green_enemy_stats = {key: value for key, value in green_enemy_stats.items()}
+
+        # skills
+        self.player_lv = 0
+        self.current_time, self.saved_time, self.mouse_angle = 0, 0, 0
+        self.basic_timer, self.skill3_timer, self.skill6_timer, self.skill9_timer, self.skill12_timer = 0, 0, 0, 0, 0
+        self.skill3, self.skill6, self.skill9, self.skill12 = None, None, None, None
+        self.basic_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill3_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill6_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill9_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill12_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+
+        # background
         self.background_offset = pygame.math.Vector2()
         self.background_half_width = screen.get_size()[0] / 2
         self.background_half_height = screen.get_size()[1] / 2
+
+        # start animation
         self.start_current_sprite = 0
         self.start_sprites = angel_right_game_start_sprites
         self.start_image = self.start_sprites[0]
@@ -85,19 +96,19 @@ class Main:
                     if event.type == pygame.KEYDOWN:
                         if self.player.channeling is False:
                             if event.key == pygame.K_SPACE:
-                                if self.current_time - self.basic_attack_timer > self.basic_attack_cooldown:
+                                if self.current_time - self.basic_timer > self.player.character.basic_cooldown:
                                     self.add_attack('basic')
-                            if event.key == pygame.K_e and self.player.skill3.added_skill_point1:
-                                if self.current_time - self.skill3_timer > self.skill3_cooldown:
+                            if event.key == pygame.K_e and self.player.character.skill3.added_skill_point1:
+                                if self.current_time - self.skill3_timer > self.player.character.skill3_cooldown:
                                     self.add_attack('skill3')
-                            if event.key == pygame.K_z and self.player.skill6.added_skill_point1:
-                                if self.current_time - self.skill6_timer > self.skill6_cooldown:
+                            if event.key == pygame.K_z and self.player.character.skill6.added_skill_point1:
+                                if self.current_time - self.skill6_timer > self.player.character.skill6_cooldown:
                                     self.add_attack('skill6')
-                            if event.key == pygame.K_x and self.player.skill9.added_skill_point1:
-                                if self.current_time - self.skill9_timer > self.skill9_cooldown:
+                            if event.key == pygame.K_x and self.player.character.skill9.added_skill_point1:
+                                if self.current_time - self.skill9_timer > self.player.character.skill9_cooldown:
                                     self.add_attack('skill9')
-                            if event.key == pygame.K_c and self.player.skill12.added_skill_point1:
-                                if self.current_time - self.skill12_timer > self.skill12_cooldown:
+                            if event.key == pygame.K_c and self.player.character.skill12.added_skill_point1:
+                                if self.current_time - self.skill12_timer > self.player.character.skill12_cooldown:
                                     self.add_attack('skill12')
                         if event.key == pygame.K_ESCAPE:
                             # pause screen
@@ -174,7 +185,7 @@ class Main:
                 self.player_group.custom_draw(self.player)
 
                 # saving current screen
-                pygame.Surface.blit(current_state_image, screen, screen_rect)
+                pygame.Surface.blit(self.current_state_image, screen, screen_rect)
 
                 # show minimap
                 self.draw_in_game_minimap()
@@ -222,8 +233,8 @@ class Main:
     def add_attack(self, type_of_attack):
         if self.player.alive:
             if type_of_attack == 'basic':
-                self.basic_attack_timer = pygame.time.get_ticks()
-                AngelBasicAttack(self.player, self.attack_group, self.enemy_group)
+                self.basic_timer = pygame.time.get_ticks()
+                AngelBasic(self.player, self.attack_group, self.enemy_group)
             if type_of_attack == 'skill3':
                 self.skill3_timer = pygame.time.get_ticks()
                 self.skill3 = AngelSkill3(self.player, self.attack_group, self.enemy_group, self.skill3_timer)
@@ -240,15 +251,13 @@ class Main:
     # display level up announcement
     def display_level_up(self):
         if self.current_time - self.skill_announcement_timer < 5000:
-            level_text = bigger_font.render("LEVEL " + str(self.player_lv), False, 'Black')
-            skill_text = font.render("+1 SKILL POINT", False, 'Black')
+            level_text = bigger_font.render('LEVEL ' + str(self.player_lv), True, 'Black')
+            skill_text = font.render('+1 SKILL POINT', True, 'Black')
             level_text_width = level_text.get_width()/2
             skill_text_width = skill_text.get_width()/2
-            level_text.set_alpha(self.skill_announcement_transparency)
-            skill_text.set_alpha(self.skill_announcement_transparency)
+            self.draw_text(bigger_font, 'LEVEL ' + str(self.player_lv), 'Black', self.skill_announcement_transparency, (WIDTH / 2 - level_text_width, 10))
+            self.draw_text(font, '+1 SKILL POINT', 'Black', self.skill_announcement_transparency, (WIDTH / 2 - skill_text_width, 80))
             self.skill_announcement_transparency -= 1
-            screen.blit(level_text, (WIDTH/2-level_text_width, 10))
-            screen.blit(skill_text, (WIDTH/2-skill_text_width, 80))
         else:
             if self.player.level % 5 != 0:
                 self.skill_announcement_transparency = 255
@@ -258,90 +267,99 @@ class Main:
     def display_hp(self):
         if self.player.current_hp >= self.player.max_hp:
             self.player.current_hp = self.player.max_hp
-        hp_division = self.player.max_hp / 500
-        hp_bar = pygame.Surface([self.player.current_hp / hp_division, 35])
-        hp_bar_under = pygame.Surface([500, 35])
-        hp_bar_border = pygame.Surface([510, 45])
-        hp_bar.fill("red")
-        hp_bar_under.fill("grey")
-        hp_bar_border.fill("black")
-        screen.blit(hp_bar_border, (20, 20))
-        screen.blit(hp_bar_under, (25, 25))
-        screen.blit(hp_bar, (25, 25))
-        screen.blit(hp_text, (30, 25))
+        hp_ratio = self.player.current_hp / self.player.max_hp
+        self.draw_surface([510, 45], 'Black', (20, 20))
+        self.draw_surface([500, 35], 'Grey', (25, 25))
+        self.draw_surface([500 * hp_ratio, 35], 'Red', (25, 25))
+        self.draw_text(font, 'HP', 'Black', 255, (30, 25))
 
     # XP definition
     def display_xp(self):
-        if self.player.xp >= 1000:
-            self.player.xp -= needed_player_xp
+        if self.player.xp >= self.player.needed_player_xp:
+            self.player.xp -= self.player.needed_player_xp
             self.player.level += 1
-        xp_division = needed_player_xp / 2000
-        xp_bar = pygame.Surface([xp_division * self.player.xp, 35])
-        xp_bar_under = pygame.Surface([500, 35])
-        xp_bar_border = pygame.Surface([510, 45])
-        xp_bar.fill("blue")
-        xp_bar_under.fill("grey")
-        xp_bar_border.fill("black")
-        screen.blit(xp_bar_border, (1390, 20))
-        screen.blit(xp_bar_under, (1395, 25))
-        screen.blit(xp_bar, (1395, 25))
-        screen.blit(xp_text, (1785, 25))
-        xp = font.render(str(self.player.level), False, 'Black')
-        screen.blit(xp, (1402, 25))
+            self.player.needed_player_xp += 100
+        xp_ratio = self.player.xp / self.player.needed_player_xp
+        self.draw_surface([510, 45], 'Black', (1390, 20))
+        self.draw_surface([500, 35], 'Grey', (1395, 25))
+        self.draw_surface([500 * xp_ratio, 35], 'Blue', (1395, 25))
+        self.draw_text(font, 'LEVEL', 'Black', 255, (1785, 25))
+        self.draw_text(font, str(self.player.level), 'Black', 255, (1402, 25))
 
-    # showing skills on screen
+    # display skills on screen
     def display_skills(self):
-        skill_border = pygame.Surface([110, 110])
-        skill_border.fill("black")
-        screen.blit(skill_border, (20, 950))
-        screen.blit(self.player.basic_attack_icon, (25, 955))
-        if self.current_time - self.basic_attack_timer < self.basic_attack_cooldown:
-            skill1_division = (self.current_time - self.basic_attack_timer) / 10
-            skill1_loading = pygame.Surface([100 - skill1_division, 100])
-            skill1_loading.fill((30, 30, 30, 255))
-            skill1_loading.set_alpha(100)
-            screen.blit(skill1_loading, (25, 955))
-        if self.player.skill3.added_skill_point1:
-            screen.blit(skill_border, (150, 950))
-            screen.blit(self.player.in_game_skill3, (155, 955))
-            if self.current_time - self.skill3_timer < self.skill3_cooldown:
-                skill3_division = (self.current_time - self.skill3_timer) / 50
-                skill3_loading = pygame.Surface([100 - skill3_division, 100])
-                skill3_loading.fill((30, 30, 30, 255))
-                skill3_loading.set_alpha(100)
-                screen.blit(skill3_loading, (155, 955))
-        if self.player.skill6.added_skill_point1:
-            screen.blit(skill_border, (280, 950))
-            screen.blit(self.player.in_game_skill6, (285, 955))
-            if self.current_time - self.skill6_timer < self.skill6_cooldown:
-                skill6_division = (self.current_time - self.skill6_timer) / 150
-                skill6_loading = pygame.Surface([100 - skill6_division, 100])
-                skill6_loading.fill((30, 30, 30, 255))
-                skill6_loading.set_alpha(100)
-                screen.blit(skill6_loading, (285, 955))
-        if self.player.skill9.added_skill_point1:
-            screen.blit(skill_border, (410, 950))
-            screen.blit(self.player.in_game_skill9, (415, 955))
-            if self.current_time - self.skill9_timer < self.skill9_cooldown:
-                skill9_division = (self.current_time - self.skill9_timer) / 300
-                skill9_loading = pygame.Surface([100 - skill9_division, 100])
-                skill9_loading.fill((30, 30, 30, 255))
-                skill9_loading.set_alpha(100)
-                screen.blit(skill9_loading, (415, 955))
-        if self.player.skill12.added_skill_point1:
-            screen.blit(skill_border, (540, 950))
-            screen.blit(self.player.in_game_skill12, (545, 955))
-            if self.current_time - self.skill12_timer < self.skill12_cooldown:
-                skill12_division = (self.current_time - self.skill12_timer) / 100
-                skill12_loading = pygame.Surface([100 - skill12_division, 100])
-                skill12_loading.fill((30, 30, 30, 255))
-                skill12_loading.set_alpha(100)
-                screen.blit(skill12_loading, (545, 955))
+        self.skill_cooldown(True, (25, 955), self.basic_polygon_points, self.basic_timer, self.player.character.basic_cooldown, None, self.player.character.basic_attack_icon)
+        if self.current_time - self.basic_timer > self.player.character.basic_cooldown:
+            self.basic_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill_cooldown(self.player.character.skill3.added_skill_point1, (155, 955), self.skill3_polygon_points, self.skill3_timer,
+                            self.player.character.skill3_cooldown, self.player.character.skill3_duration, self.player.character.in_game_skill3)
+        if self.current_time - self.skill3_timer > self.player.character.skill3_cooldown:
+            self.skill3_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill_cooldown(self.player.character.skill6.added_skill_point1, (285, 955), self.skill6_polygon_points, self.skill6_timer,
+                            self.player.character.skill6_cooldown, self.player.character.skill6_duration, self.player.character.in_game_skill6)
+        if self.current_time - self.skill6_timer > self.player.character.skill6_cooldown:
+            self.skill6_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill_cooldown(self.player.character.skill9.added_skill_point1, (415, 955), self.skill9_polygon_points, self.skill9_timer,
+                            self.player.character.skill9_cooldown, self.player.character.skill9_duration, self.player.character.in_game_skill9)
+        if self.current_time - self.skill9_timer > self.player.character.skill9_cooldown:
+            self.skill9_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+        self.skill_cooldown(self.player.character.skill12.added_skill_point1, (545, 955), self.skill12_polygon_points, self.skill12_timer,
+                            self.player.character.skill12_cooldown, self.player.character.skill12_duration, self.player.character.in_game_skill12)
+        if self.current_time - self.skill12_timer > self.player.character.skill12_cooldown:
+            self.skill12_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
+
+    # polygon skill cooldown
+    def skill_cooldown(self, availability, position, points, timer, cooldown, duration, icon):
+        if availability:
+            self.draw_surface([110, 110], 'Black', (position[0] - 5, position[1] - 5))
+            screen.blit(icon, position)
+            if self.current_time - timer < cooldown:
+                skill_polygon_surface.fill((0, 0, 0, 0))
+                ratio = 6650 / cooldown
+                if 50 <= points[0][0] < 100 and points[0][1] == 0:
+                    points[0] = (points[0][0] + ratio, points[0][1])
+                    if points[0][0] > 100:
+                        points[0] = (100, 0)
+                        points.remove(points[1])
+                elif points[0][0] == 100 and 0 <= points[0][1] < 100:
+                    points[0] = (points[0][0], points[0][1] + ratio)
+                    if points[0][1] > 100:
+                        points[0] = (100, 100)
+                        points.remove(points[1])
+                elif 0 < points[0][0] <= 100 and points[0][1] == 100:
+                    points[0] = (points[0][0] - ratio, points[0][1])
+                    if points[0][0] < 0:
+                        points[0] = (0, 100)
+                        points.remove(points[1])
+                elif points[0][0] == 0 and 0 < points[0][1] <= 100:
+                    points[0] = (points[0][0], points[0][1] - ratio)
+                    if points[0][1] < 0:
+                        points[0] = (0, 0)
+                        points.remove(points[1])
+                elif 0 <= points[0][0] < 50 and points[0][1] == 0:
+                    points[0] = (points[0][0] + ratio, points[0][1])
+                if cooldown - (self.current_time - timer) > 1000:
+                    cooldown_text = skill_font.render(str(int((cooldown - (self.current_time - timer)) / 1000)), True, 'Black')
+                    cooldown_text_width = cooldown_text.get_width()/2
+                    cooldown_text_height = cooldown_text.get_height()/2
+                    self.draw_text(skill_font, str(int((cooldown - (self.current_time - timer)) / 1000)), 'Black', 200, (position[0]+50-cooldown_text_width, position[1]+50-cooldown_text_height))
+                else:
+                    cooldown_text = skill_font.render(str(round(((cooldown - (self.current_time - timer)) / 1000), 1)), True, 'Black')
+                    cooldown_text_width = cooldown_text.get_width() / 2
+                    cooldown_text_height = cooldown_text.get_height() / 2
+                    self.draw_text(skill_font, str(round(((cooldown - (self.current_time - timer)) / 1000), 1)), 'Black', 200, (position[0]+50-cooldown_text_width, position[1]+50-cooldown_text_height))
+                pygame.draw.polygon(skill_polygon_surface, (30, 30, 30, 120), points)
+                screen.blit(skill_polygon_surface, position)
+                if duration is not None:
+                    if self.current_time - timer < duration:
+                        duration_ratio = 1 - ((self.current_time - timer) / duration)
+                        self.draw_surface([110, 20], 'Black', (position[0] - 5, position[1] - 30))
+                        self.draw_surface([100 * duration_ratio, 10], 'Red', (position[0], position[1] - 25))
 
     # for timers of skills not to run in menu etc.
     def update_timers(self):
         current_time = pygame.time.get_ticks()
-        self.basic_attack_timer += current_time - self.saved_time
+        self.basic_timer += current_time - self.saved_time
         self.skill3_timer += current_time - self.saved_time
         self.skill6_timer += current_time - self.saved_time
         self.skill9_timer += current_time - self.saved_time
@@ -357,7 +375,7 @@ class Main:
 
     # for slowly showing pause and inventory screen
     def screen_delay(self):
-        self.blurred_current_state_image = self.greyscale(current_state_image)
+        self.blurred_current_state_image = self.greyscale(self.current_state_image)
         self.pause_screen_transparency = 255
 
     # show pause screen
@@ -385,25 +403,20 @@ class Main:
     def display_inventory_screen(self):
         self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        screen.blit(self.player.image_right_scaled, (105, 55))
-        pause_lv = bigger_font.render(f'Level:{self.player.level}', False, 'Black')
+        screen.blit(self.player.character.image_right_scaled, (105, 55))
+        pause_lv = bigger_font.render(f'Level:{self.player.level}', True, 'Black')
         pause_lv_width = pause_lv.get_width()
-        inventory_hp = font.render(f'{round(self.player.current_hp, 1)}/{round(self.player.max_hp, 1)}', False, 'Black')
-        inventory_attack_damage = font.render(f'{round(self.player.attack, 1)}', False, 'Black')
-        inventory_armor = font.render(f'{self.player.armor}', False, 'Black')
-        inventory_gold = font.render(f'{self.player.gold}', False, 'Black')
-        inventory_ms = font.render(f'{self.player.speed}', False, 'Black')
-        screen.blit(pause_lv, (115+(300-pause_lv_width)/2, 350))
         screen.blit(health, (105, 440))
         screen.blit(attack_damage, (105, 525))
         screen.blit(armor, (105, 610))
         screen.blit(movement_speed, (105, 695))
         screen.blit(gold, (105, 780))
-        screen.blit(inventory_hp, (205, 475))
-        screen.blit(inventory_attack_damage, (205, 560))
-        screen.blit(inventory_armor, (205, 645))
-        screen.blit(inventory_ms, (205, 730))
-        screen.blit(inventory_gold, (205, 815))
+        self.draw_text(bigger_font, f'Level:{self.player.level}', 'Black', 255, (115 + (300 - pause_lv_width) / 2, 350))
+        self.draw_text(font, f'{round(self.player.current_hp, 1)}/{round(self.player.max_hp, 1)}', 'Black', 255, (205, 475))
+        self.draw_text(font, f'{round(self.player.attack, 1)}', 'Black', 255, (205, 560))
+        self.draw_text(font, f'{self.player.armor}', 'Black', 255, (205, 645))
+        self.draw_text(font, f'{self.player.speed}', 'Black', 255, (205, 730))
+        self.draw_text(font, f'{self.player.gold}', 'Black', 255, (205, 815))
         self.draw_inventory_minimap()
         if self.skill_button.draw(screen) and self.clicked is False:
             self.inventory_screen = False
@@ -459,8 +472,7 @@ class Main:
     def display_skill_tree(self):
         self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        skill_point_text = font.render(f'{self.player.skill_points} skill points', False, 'Purple')
-        screen.blit(skill_point_text, (1475, 700))
+        self.draw_text(font, f'{self.player.skill_points} skill points', 'Purple', 255, (1475, 700))
         for x in range(3):
             for y in range(3):
                 screen.blit(arrow_right, (x*355+305, y*355+140))
@@ -481,12 +493,14 @@ class Main:
     # show death screen
     def display_death_screen(self):
         from menu import Menu
-        screen.fill("grey")
-        screen.blit(death_text, death_text_rect)
-        death_level = font.render(f'Level:{self.player.level}', False, 'Black')
-        death_level_rect = death_level.get_rect(center=(960, 800))
-        screen.blit(death_level, death_level_rect)
-        screen.blit(self.player.image_death_scaled, (810, 350))
+        screen.fill('Grey')
+        death_text = bigger_font.render('YOU DIED', True, 'Black')
+        death_text_width = death_text.get_width()
+        death_level = font.render(f'Level:{self.player.level}', True, 'Black')
+        death_level_width = death_level.get_width()
+        self.draw_text(bigger_font, 'YOU DIED', 'Black', 255, (960 - death_text_width / 2, 700))
+        self.draw_text(font, f'Level:{self.player.level}', 'Black', 255, (960 - death_level_width / 2, 810))
+        screen.blit(self.player.character.image_death_scaled, (810, 350))
         if self.quit_button.draw(screen) and self.clicked is False:
             menu = Menu(True)
             menu.run(running=True, menu_state='main')
@@ -507,10 +521,17 @@ class Main:
                  [randint(self.player.rect.left - 1310, self.player.rect.right + 1210), self.player.rect.bottom + 810]]
         chosen_cords = random.choice(cords)
         if randint(0, 9) >= 3:
-            RedEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player)
+            RedEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player, self.red_enemy_stats)
+            self.red_enemy_stats["health"] += 1
+            self.red_enemy_stats["attack"] += 0.01
+            self.red_enemy_stats["armor"] += 1
         else:
-            GreenEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player)
+            GreenEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player, self.green_enemy_stats)
+            self.green_enemy_stats["health"] += 1
+            self.green_enemy_stats["attack"] += 1
+            self.green_enemy_stats["armor"] += 1
 
+    # show start animation
     def start_animation(self):
         self.start_current_sprite += 0.1
         if self.start_current_sprite >= len(self.start_sprites):
@@ -520,6 +541,20 @@ class Main:
             self.start_image = self.start_sprites[int(self.start_current_sprite)]
             self.start_rect = self.start_image.get_rect().move(860, 440)
         screen.blit(self.start_image, self.start_rect)
+
+    # draw surface on screen
+    @staticmethod
+    def draw_surface(size, color, position):
+        surface = pygame.Surface(size)
+        surface.fill(color)
+        screen.blit(surface, position)
+
+    # draw text on screen
+    @staticmethod
+    def draw_text(text_font, text, color, transparency, position):
+        img = text_font.render(text, True, color)
+        img.set_alpha(transparency)
+        screen.blit(img, position)
 
     # greyscale definition
     @staticmethod

@@ -2,7 +2,7 @@ import math
 import numpy as np
 from settings import *
 from assets import *
-from src.angelfiles.angelskills import AngelSkill
+from src.angelfiles.angel import Angel
 from src.angelfiles.angelskill8 import AngelSkill8
 from src.angelfiles.angelskill10 import AngelSkill10
 from spritegroups import SkillGroup
@@ -47,6 +47,7 @@ class Player(pygame.sprite.Sprite):
         self.resurrect_animation = False
         self.channeling = False
         self.can_fly = False
+        self.needed_player_xp = needed_player_xp
         if character == 'Knight':
             self.image = knight_right
             self.image_right = knight_right
@@ -62,48 +63,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_timer = 0.05
             self.basic_attack_icon = knight_basic_attack_icon
         if character == 'Angel':
-            self.image = angel_right
-            self.image_right = angel_right
-            self.image_right_scaled = angel_right_scaled
-            self.image_death = angel_death
-            self.image_death_scaled = angel_death_scaled
-            self.player_left_stand_sprites = angel_left_stand_sprites
-            self.player_right_stand_sprites = angel_right_stand_sprites
-            self.player_left_sprites = angel_left_move_sprites
-            self.player_right_sprites = angel_right_move_sprites
-            self.player_left_death_sprites = angel_left_death_sprites
-            self.player_right_death_sprites = angel_right_death_sprites
-            self.player_left_basic_attack_sprites = angel_left_basic_attack_sprites
-            self.player_right_basic_attack_sprites = angel_right_basic_attack_sprites
-            self.player_left_explosion_sprites = angel_left_explosion_sprites
-            self.player_right_explosion_sprites = angel_right_explosion_sprites
-            self.animation_timer = 0.1
-            self.basic_attack_icon = angel_basic_attack_icon
-            self.in_game_skill3 = in_game_angel_skill3_icon
-            self.in_game_skill6 = in_game_angel_skill6_icon
-            self.in_game_skill9 = in_game_angel_skill9_icon
-            self.in_game_skill12 = in_game_angel_skill12_icon
-            self.basic_attack_cooldown = 1000
-            self.skill3_cooldown = 5000
-            self.skill6_cooldown = 15000
-            self.skill9_cooldown = 30000
-            self.skill12_cooldown = 10000
-            self.skill3_duration = 3000
-            self.skill6_duration = 4000
-            self.skill9_duration = 1000
-            self.skill12_duration = 3000
-            self.skill1 = AngelSkill(1, (75, 75), tree_angel_skill1_icon, self.skill_group, self, True, "WINGS OF LIGHT", angel_skill1_description, 1, 2, 3)
-            self.skill2 = AngelSkill(2, (75, 430), tree_angel_skill2_icon, self.skill_group, self, True, "DIVINE LEAD", angel_skill2_description, 1.1, 1.25, 1.5)
-            self.skill3 = AngelSkill(3, (75, 785), tree_angel_skill3_icon, self.skill_group, self, True, "RAY OF LIGHT", angel_skill3_description, 1, 1.25, 1.5)
-            self.skill4 = AngelSkill(4, (430, 75), tree_angel_skill4_icon, self.skill_group, self, False, "HOLY SWORD", angel_skill4_description, 1.1, 1.2, 1.3)
-            self.skill5 = AngelSkill(5, (430, 430), tree_angel_skill5_icon, self.skill_group, self, False, "DIVINE PUNISHMENT", angel_skill5_description, 0.5, 0.75, 1)
-            self.skill6 = AngelSkill(6, (430, 785), tree_angel_skill6_icon, self.skill_group, self, False, "DIVINE STRENGTH", angel_skill6_description, 0.8, 0.7, 0.6)
-            self.skill7 = AngelSkill(7, (785, 75), tree_angel_skill7_icon, self.skill_group, self, False, "LIGHT BARRIER", angel_skill7_description, 0.95, 0.9, 0.85)
-            self.skill8 = AngelSkill(8, (785, 430), tree_angel_skill8_icon, self.skill_group, self, False, "GUARDIAN ANGEL", angel_skill8_description, 0.3, 0.3, 0.3)
-            self.skill9 = AngelSkill(9, (785, 785), tree_angel_skill9_icon, self.skill_group, self, False, "EXPLOSION", angel_skill9_description, 3, 4, 5)
-            self.skill10 = AngelSkill(10, (1140, 75), tree_angel_skill10_icon, self.skill_group, self, False, "INNER PEACE", angel_skill10_description, 0.01, 0.02, 0.03)
-            self.skill11 = AngelSkill(11, (1140, 430), tree_angel_skill11_icon, self.skill_group, self, False, "BACK FROM THE DEAD", angel_skill11_description, 0.4, 0.5, 0.6)
-            self.skill12 = AngelSkill(12, (1140, 785), tree_angel_skill12_icon, self.skill_group, self, False, "GOD'S WRATH", angel_skill12_description, 2, 2.5, 3)
+            self.character = Angel(self, self.skill_group)
         if character == 'Assassin':
             self.image = assassin_right
             self.image_right = assassin_right
@@ -160,8 +120,8 @@ class Player(pygame.sprite.Sprite):
             self.player_right_death_sprites = swordsman_right_death_sprites
             self.animation_timer = 0.1
             self.basic_attack_icon = swordsman_basic_attack_icon
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
+        self.mask = pygame.mask.from_surface(self.character.image)
+        self.rect = self.character.image.get_rect().move(WIDTH / 2 - PLAYER_WIDTH / 2, HEIGHT / 2 - PLAYER_HEIGHT / 2)
         self.passive_skill8 = AngelSkill8(self, passive_group, attack_group, enemy_group, False)
         self.passive_skill10 = AngelSkill10(self, passive_group, False)
 
@@ -183,29 +143,29 @@ class Player(pygame.sprite.Sprite):
 
     def animation_right(self):
         self.current_sprite += 0.01 * self.speed
-        if self.current_sprite >= len(self.player_right_sprites):
+        if self.current_sprite >= len(self.character.player_right_sprites):
             self.current_sprite = 0
-        self.image = self.player_right_sprites[int(self.current_sprite)]
+        self.character.image = self.character.player_right_sprites[int(self.current_sprite)]
 
     def animation_left(self):
         self.current_sprite += 0.01 * self.speed
-        if self.current_sprite >= len(self.player_left_sprites):
+        if self.current_sprite >= len(self.character.player_left_sprites):
             self.current_sprite = 0
-        self.image = self.player_left_sprites[int(self.current_sprite)]
+        self.character.image = self.character.player_left_sprites[int(self.current_sprite)]
 
     def right_death_animation(self):
         self.current_death_sprite += 0.1
-        if self.current_death_sprite >= len(self.player_right_death_sprites) + 8:
+        if self.current_death_sprite >= len(self.character.player_right_death_sprites) + 8:
             self.death_animation = False
-        if self.current_death_sprite <= len(self.player_right_death_sprites):
-            self.image = self.player_right_death_sprites[int(self.current_death_sprite)]
+        if self.current_death_sprite <= len(self.character.player_right_death_sprites):
+            self.character.image = self.character.player_right_death_sprites[int(self.current_death_sprite)]
 
     def left_death_animation(self):
         self.current_death_sprite += 0.1
-        if self.current_death_sprite >= len(self.player_left_death_sprites) + 8:
+        if self.current_death_sprite >= len(self.character.player_left_death_sprites) + 8:
             self.death_animation = False
-        if self.current_death_sprite <= len(self.player_left_death_sprites):
-            self.image = self.player_left_death_sprites[int(self.current_death_sprite)]
+        if self.current_death_sprite <= len(self.character.player_left_death_sprites):
+            self.character.image = self.character.player_left_death_sprites[int(self.current_death_sprite)]
 
     def ghost_animation(self):
         self.ghost_current_sprite += 0.05

@@ -28,18 +28,18 @@ class PlayerGroup(pygame.sprite.GroupSingle):
                 self.ghost_offset_pos.y -= 1
                 self.display.blit(sprite.ghost_image, self.ghost_offset_pos)
             if sprite.basic_attack_animation is False and sprite.channeling is False and sprite.resurrect_animation is False:
-                self.display.blit(sprite.image, offset_pos)
+                self.display.blit(sprite.character.image, offset_pos)
             if sprite.current_orientation == "right" and sprite.alive is True:
-                self.current_sprite += sprite.animation_timer
-                if self.current_sprite >= len(sprite.player_right_stand_sprites):
+                self.current_sprite += sprite.character.animation_timer
+                if self.current_sprite >= len(sprite.character.player_right_stand_sprites):
                     self.current_sprite = 0
-                sprite.image = sprite.player_right_stand_sprites[int(self.current_sprite)]
+                sprite.character.image = sprite.character.player_right_stand_sprites[int(self.current_sprite)]
             if sprite.current_orientation == "left" and sprite.alive is True:
-                self.current_sprite += sprite.animation_timer
-                if self.current_sprite >= len(sprite.player_left_stand_sprites):
+                self.current_sprite += sprite.character.animation_timer
+                if self.current_sprite >= len(sprite.character.player_left_stand_sprites):
                     self.current_sprite = 0
-                sprite.image = sprite.player_left_stand_sprites[int(self.current_sprite)]
-            sprite.mask = pygame.mask.from_surface(sprite.image)
+                sprite.character.image = sprite.character.player_left_stand_sprites[int(self.current_sprite)]
+            sprite.mask = pygame.mask.from_surface(sprite.character.image)
 
 
 class EnemyGroup(pygame.sprite.Group):
@@ -84,8 +84,8 @@ class EnemyGroup(pygame.sprite.Group):
                 if other_sprite != sprite:
                     if sprite.hit_box.colliderect(other_sprite.hit_box):
                         self.handle_enemy_collision(sprite, other_sprite)
-            hp_division = sprite.max_hp / (abs(sprite.rect.left - sprite.rect.right) - 10)
-            hp_bar = pygame.Surface([(sprite.hp / hp_division), 5])
+            hp_ratio = sprite.hp / sprite.max_hp
+            hp_bar = pygame.Surface([(abs(sprite.rect.left - sprite.rect.right) - 10) * hp_ratio, 5])
             hp_bar_under = pygame.Surface([abs(sprite.rect.left - sprite.rect.right) - 10, 5])
             hp_bar.fill("red")
             hp_bar_under.fill("black")
@@ -131,9 +131,10 @@ class AttacksGroup(pygame.sprite.Group):
     def custom_draw(self, player):
         self.center_target_camera(player)
         for sprite in self.sprites():
-            offset_pos = sprite.rect.topleft - self.offset + player.camera
-            self.display.blit(sprite.image, offset_pos)
-            sprite.mask = pygame.mask.from_surface(sprite.image)
+            if player.alive:
+                offset_pos = sprite.rect.topleft - self.offset + player.camera
+                self.display.blit(sprite.image, offset_pos)
+                sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
 class PassivesGroup(pygame.sprite.Group):
@@ -223,7 +224,7 @@ class SkillGroup(pygame.sprite.Group):
                 lines_of_text = self.wrap_text(sprite.description, font, 400)
                 y_pos = 135
                 for line in lines_of_text:
-                    text_to_surface = font.render(line, False, "black")
+                    text_to_surface = font.render(line, True, "black")
                     screen.blit(text_to_surface, (1450, y_pos))
                     height = text_to_surface.get_height() + 5
                     y_pos += height
