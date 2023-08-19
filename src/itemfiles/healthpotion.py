@@ -31,7 +31,7 @@ class HealthPotion(pygame.sprite.Sprite):
             self.shadow.set_alpha(self.transparency)
 
     def magnet(self):
-        if abs(self.rect.center[0] - self.player.rect.center[0]) < 150 and abs(self.rect.center[1] - self.player.rect.center[1]) < 150 and self.player.current_hp < self.player.max_hp and self.player.alive and self.player.resurrect_animation is False:
+        if abs(self.rect.center[0] - self.player.rect.center[0]) < 150 and abs(self.rect.center[1] - self.player.rect.center[1]) < 150 and self.player.stats["health"] < self.player.stats["max_hp"] and self.player.alive and self.player.resurrect_animation is False:
             self.attracted = True
             x_range = self.player.rect.centerx - self.rect.centerx
             y_range = self.player.rect.centery - self.rect.centery
@@ -45,10 +45,10 @@ class HealthPotion(pygame.sprite.Sprite):
             self.rect.y += y_speed
 
     def collision(self):
-        if self.rect.colliderect(self.player.rect) and self.player.current_hp < self.player.max_hp and self.player.alive and self.player.resurrect_animation is False:
+        if self.rect.colliderect(self.player.rect) and self.player.stats["health"] < self.player.stats["max_hp"] and self.player.alive and self.player.resurrect_animation is False:
             if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
                 self.kill()
-                self.player.current_hp += self.value
+                self.player.stats["health"] += self.value
 
     def update(self):
         self.collision()

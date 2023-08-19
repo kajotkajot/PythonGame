@@ -1,16 +1,11 @@
 import pygame
 
 # game assets
-current_state_image = pygame.image.load('res/background.png').convert_alpha()
-arena_background = pygame.image.load('res/arena_background.png').convert_alpha()
 cursor = pygame.transform.scale(pygame.image.load('res/cursor.png').convert_alpha(), (48, 48))
 ghost_sprites = [pygame.image.load('res/ghost1.png').convert_alpha(),
                  pygame.image.load('res/ghost2.png').convert_alpha()]
 sprite_width, sprite_height = 200, 200
-
-# minimap assets
-inventory_minimap_background = pygame.transform.scale(arena_background, (970, 970))
-in_game_minimap_background = pygame.transform.scale(arena_background, (1000, 1000))
+floor_texture = pygame.image.load('res/floor_texture.png').convert_alpha()
 
 # knight assets
 knight_right = pygame.image.load('res/knight_stand_right1.png').convert_alpha()
@@ -108,8 +103,9 @@ for row in range(6):
     angel_divine_left_explosion_sprites.append(angel_sprite_sheet_left.subsurface(sprite_rect))
     angel_divine_right_explosion_sprites.append(angel_sprite_sheet_right.subsurface(sprite_rect))
 angel_right = angel_right_stand_sprites[0]
-angel_right_scaled = pygame.transform.scale(angel_right, (300, 300))
-angel_right_menu = pygame.transform.scale(angel_right, (400, 400))
+angel_icon = pygame.image.load('res/angel_icon.png').convert_alpha()
+angel_icon_inventory = pygame.transform.scale(pygame.image.load('res/angel_icon.png').convert_alpha(), (200, 200))
+angel_icon_menu = pygame.transform.scale(pygame.image.load('res/angel_icon.png').convert_alpha(), (400, 400))
 angel_death = angel_right_death_sprites[5]
 angel_death_scaled = pygame.transform.scale(angel_death, (300, 300))
 

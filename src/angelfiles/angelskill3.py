@@ -10,7 +10,7 @@ class AngelSkill3(pygame.sprite.Sprite):
         self.timer = timer
         self.image = angel_skill3_animation
         self.rect = self.image.get_rect().move(self.player.rect.centerx, self.player.rect.centery - 50)
-        self.damage = self.player.attack * self.player.character.skill3.current_value
+        self.damage = self.player.stats["attack"] * self.player.character.skill3.current_value
         self.current_time = pygame.time.get_ticks()
         self.offset = pygame.Vector2(650, 0)
         self.mask = pygame.mask.from_surface(self.image)
@@ -31,7 +31,7 @@ class AngelSkill3(pygame.sprite.Sprite):
         for enemy in self.enemy_group:
             if self.rect.colliderect(enemy.rect):
                 if self.mask.overlap(enemy.mask, (enemy.rect.x - self.rect.x, enemy.rect.y - self.rect.y)):
-                    enemy.hp -= self.damage*(1-((enemy.armor*self.player.armor_reduction)/((enemy.armor*self.player.armor_reduction)+99)))
+                    enemy.stats["health"] -= self.damage*(1-((enemy.stats["armor"]*self.player.stats["armor_reduction"])/((enemy.stats["armor"]*self.player.stats["armor_reduction"])+99)))
 
     def update(self):
         self.check_state()

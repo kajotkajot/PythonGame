@@ -48,7 +48,7 @@ class AttackDamage(pygame.sprite.Sprite):
         if self.rect.colliderect(self.player.rect) and self.player.alive:
             if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
                 self.kill()
-                self.player.attack += self.value * self.player.character.skill4.current_value
+                self.player.stats["attack"] += self.value * self.player.character.skill4.current_value
 
     def update(self):
         self.collision()

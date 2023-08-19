@@ -58,35 +58,35 @@ class AngelSkill(pygame.sprite.Sprite):
             self.skill11()
 
     def skill1(self):
-        self.player.speed = int(angel_stats["speed"] + self.current_value)
+        self.player.stats["speed"] = int(angel_stats["speed"] + self.current_value)
         self.player.can_fly = True
 
     def skill2(self):
-        self.player.current_hp += (int(angel_stats["health"]) * self.current_value) - self.player.max_hp
-        self.player.max_hp = int(angel_stats["health"] * self.current_value)
+        self.player.stats["health"] += (int(angel_stats["health"]) * self.current_value) - self.player.stats["max_hp"]
+        self.player.stats["max_hp"] = int(angel_stats["health"] * self.current_value)
 
     def skill4(self):
-        self.player.attack = int(angel_stats["attack"] * self.current_value)
+        self.player.stats["attack"] = int(angel_stats["attack"] * self.current_value)
 
     def skill5(self):
-        self.player.damage_bounce = self.current_value
+        self.player.stats["damage_bounce"] = self.current_value
 
     def skill6(self):
         self.player.character.skill6_duration += 2000
 
     def skill7(self):
-        self.player.damage_reduction = self.current_value
+        self.player.stats["damage_reduction"] = self.current_value
 
     def skill8(self):
         self.player.passive_skill8.active = True
-        if self.player.resurrection_value < 0.3:
-            self.player.resurrection_value = self.current_value
-        self.player.resurrections += 1
+        if self.player.stats["resurrection_value"] < 0.3:
+            self.player.stats["resurrection_value"] = self.current_value
+        self.player.stats["resurrections"] += 1
 
     def skill10(self):
         self.player.passive_skill10.active = True
-        self.player.regeneration = self.current_value
+        self.player.stats["regeneration"] = self.current_value
 
     def skill11(self):
-        self.player.resurrection_value = self.current_value
+        self.player.stats["resurrection_value"] = self.current_value
         self.player.explosion_on_death = True

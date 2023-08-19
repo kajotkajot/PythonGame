@@ -23,8 +23,8 @@ class AngelSkill8(pygame.sprite.Sprite):
             if self.player.explosion_on_death:
                 skill9_timer = pygame.time.get_ticks()
                 AngelSkill9(self.player, self.attack_group, self.enemy_group, skill9_timer)
-            self.player.current_hp = self.player.max_hp * self.player.resurrection_value
-            self.player.resurrections -= 1
+            self.player.stats["health"] = self.player.stats["max_hp"] * self.player.stats["resurrection_value"]
+            self.player.stats["resurrections"] -= 1
             self.player.resurrect_animation = False
             self.current_sprite = 0
         else:
@@ -38,8 +38,8 @@ class AngelSkill8(pygame.sprite.Sprite):
             if self.player.explosion_on_death:
                 skill9_timer = pygame.time.get_ticks()
                 AngelSkill9(self.player, self.attack_group, self.enemy_group, skill9_timer)
-            self.player.current_hp = self.player.max_hp * self.player.resurrection_value
-            self.player.resurrections -= 1
+            self.player.stats["health"] = self.player.stats["max_hp"] * self.player.stats["resurrection_value"]
+            self.player.stats["resurrections"] -= 1
             self.player.resurrect_animation = False
             self.current_sprite = 0
         else:
@@ -53,7 +53,7 @@ class AngelSkill8(pygame.sprite.Sprite):
             self.animation_right()
 
     def check_state(self):
-        if self.player.current_hp <= 0 and self.player.resurrections > 0:
+        if self.player.stats["health"] <= 0 and self.player.stats["resurrections"] > 0:
             self.player.channeling = True
             self.player.resurrect_animation = True
             self.check_orientation()

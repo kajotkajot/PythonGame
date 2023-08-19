@@ -1,3 +1,5 @@
+import math
+import numpy as np
 from src.assets import *
 from random import randint
 from src.itemfiles.health import Health
@@ -15,16 +17,13 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.attack_group = attack_group
         self.item_group = item_group
         self.player = player
-        self.stats = stats
-        self.hp = self.stats["health"]
-        self.max_hp = self.stats["health"]
+        self.stats = {key: value for key, value in stats.items()}
         self.speed = self.stats["speed"]
-        self.damage = self.stats["attack"]
-        self.armor = self.stats["armor"]
         self.image = green_enemy_right
         self.rect = self.image.get_rect().move(enemy_cords[0], enemy_cords[1])
-        self.enemy_left_sprites = green_enemy_left_sprites
-        self.enemy_right_sprites = green_enemy_right_sprites
+        self.origin_position = self.rect.center
+        self.green_enemy_left_sprites = green_enemy_left_sprites
+        self.green_enemy_right_sprites = green_enemy_right_sprites
         self.green_enemy_left_death_sprites = green_enemy_left_death_sprites
         self.green_enemy_right_death_sprites = green_enemy_right_death_sprites
         self.green_enemy_left_blow_sprites = green_enemy_left_blow_sprites
@@ -39,12 +38,15 @@ class GreenEnemy(pygame.sprite.Sprite):
         self.mass = 1
         self.restitution = 0.8
         self.mask = pygame.mask.from_surface(self.image)
+        self.jump_timer = np.random.uniform(75, 125)
+        self.going_back = False
+        self.going_back_timer = 0
 
     def move(self):
         if self.current_orientation == "right":
-            self.image = self.enemy_right_sprites[1]
+            self.image = self.green_enemy_right_sprites[1]
         if self.current_orientation == "left":
-            self.image = self.enemy_left_sprites[1]
+            self.image = self.green_enemy_left_sprites[1]
         self.move_def()
 
     def move_def(self):
@@ -79,30 +81,62 @@ class GreenEnemy(pygame.sprite.Sprite):
 
     def stand_right(self):
         self.speed = 0
-        self.image = self.enemy_right_sprites[0]
+        self.image = self.green_enemy_right_sprites[0]
 
     def stand_left(self):
         self.speed = 0
-        self.image = self.enemy_left_sprites[0]
+        self.image = self.green_enemy_left_sprites[0]
 
     def is_alive(self):
-        if self.hp <= 0:
-            self.hp = 0
+        if self.stats["health"] <= 0:
+            self.stats["health"] = 0
             if self in self.enemy_group:
                 self.enemy_group.remove(self)
                 self.dead_enemy_group.add(self)
             self.player.xp += self.stats["xp"]
 
+    def wait(self):
+        if self.going_back_timer < 60:
+            self.going_back_timer += 1
+        else:
+            self.going_back = True
+
+    def move_back(self):
+        x_range = self.origin_position[0] - self.rect.centerx
+        y_range = self.origin_position[1] - self.rect.centery
+        xy_range = math.hypot(x_range, y_range)
+        if xy_range != 0:
+            x_range /= xy_range*15
+            y_range /= xy_range*15
+        x_speed = self.stats["speed"] / 2.5 * x_range
+        y_speed = self.stats["speed"] / 2.5 * y_range
+        self.rect.x += x_speed
+        self.rect.y += y_speed
+        if self.rect.centerx > self.origin_position[0]:
+            self.current_orientation = "left"
+        if self.rect.centerx < self.origin_position[0]:
+            self.current_orientation = "right"
+
     def detect_collision(self):
         if self.rect.colliderect(self.player.rect) and not self.speed == 0:
             if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)) and self.player.resurrect_animation is False and self.player.channeling is False:
-                self.player.current_hp -= self.damage * (1-(self.player.armor/(self.player.armor+99))) * self.player.damage_reduction
+                self.player.stats["health"] -= self.stats["attack"] * (1-(self.player.stats["armor"]/(self.player.stats["armor"]+99))) * self.player.stats["damage_reduction"]
                 if self in self.enemy_group:
                     self.enemy_group.remove(self)
                     self.dead_enemy_group.add(self)
                 self.rect.top -= 20
         if not self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
-            self.move()
+            if math.hypot(self.player.rect.centerx - self.rect.centerx, self.player.rect.centery - self.rect.centery) <= 750:
+                self.move()
+            else:
+                if not self.origin_position[0]-5 <= self.rect.centerx <= self.origin_position[0]+5 and not self.origin_position[1]-5 <= self.rect.centery <= self.origin_position[1]+5:
+                    if self.going_back:
+                        self.move_back()
+                    else:
+                        self.wait()
+                else:
+                    self.going_back = False
+                    self.going_back_timer = 0
         self.speed -= self.timer
         self.timer += 1.5
         if self.speed <= 0:
@@ -110,7 +144,7 @@ class GreenEnemy(pygame.sprite.Sprite):
                 self.stand_right()
             if self.current_orientation == "left":
                 self.stand_left()
-        if self.timer >= 100:
+        if self.timer >= self.jump_timer:
             self.check_direction()
             self.timer = 0
 
@@ -173,7 +207,7 @@ class GreenEnemy(pygame.sprite.Sprite):
             self.image = self.green_enemy_left_blow_sprites[int(self.current_sprite)]
 
     def death_check(self):
-        if self.hp <= 0:
+        if self.stats["health"] <= 0:
             if self.current_orientation == "right":
                 self.right_death_animation()
             if self.current_orientation == "left":

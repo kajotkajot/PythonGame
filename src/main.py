@@ -1,5 +1,6 @@
-import random
 import sys
+import time
+import math
 import numpy as np
 from random import randint
 from player import Player
@@ -14,10 +15,11 @@ from settings import *
 from assets import *
 from button import Button
 from spritegroups import PlayerGroup, EnemyGroup, DeadEnemyGroup, AttacksGroup, PassivesGroup, ItemGroup
+from map import Map
 
 
 class Main:
-    def __init__(self, character):
+    def __init__(self, character, fps):
         # important variables
         self.game_active = False
         self.game_start = True
@@ -26,6 +28,7 @@ class Main:
         self.inventory_screen = False
         self.skill_tree_screen = False
         self.clicked = False
+        self.fps_counter = fps
 
         # grey screen
         self.blurred_current_state_image = None
@@ -40,6 +43,9 @@ class Main:
         self.skill_tree_back_button = Button('BACK', 1465, 925, button_360x100_image, button_360x100_image_pressed)
 
         # transparencies and timers
+        self.fps_timer = time.time()
+        self.fps_count = 0
+        self.fps = 0
         self.skill_announcement_timer = 0
         self.skill_announcement_transparency = 255
         self.pause_screen_transparency = 255
@@ -74,10 +80,19 @@ class Main:
         self.skill9_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
         self.skill12_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
 
-        # background
+        # map and minimap
+        self.map = Map()
+        self.map.create_map()
         self.background_offset = pygame.math.Vector2()
         self.background_half_width = screen.get_size()[0] / 2
         self.background_half_height = screen.get_size()[1] / 2
+        self.player_minimap_x = 0
+        self.player_minimap_y = 0
+        self.inventory_fog_of_war = pygame.Surface((970, 970), pygame.SRCALPHA)
+        self.inventory_fog_of_war.fill((15, 15, 15, 0))
+        self.inventory_minimap_area = None
+        self.fog_surface = pygame.Surface((WIDTH+600, HEIGHT+600), pygame.SRCALPHA)
+        self.prepare_fog_of_war()
 
         # start animation
         self.start_current_sprite = 0
@@ -125,8 +140,6 @@ class Main:
                             self.screen_delay()
                             self.game_active = False
                             self.skill_tree_screen = True
-                    if event.type == enemy_timer:
-                        self.enemy_spawn()
                     self.clicked = False
                     self.saved_time = pygame.time.get_ticks()
                 else:
@@ -156,7 +169,7 @@ class Main:
 
             if self.game_active:
                 # show background
-                self.display_background()
+                self.map.update(self.player)
 
                 # save current ticks
                 self.current_time = pygame.time.get_ticks()
@@ -167,6 +180,9 @@ class Main:
 
                 # show death animation for dead enemies
                 self.dead_enemy_group.custom_draw(self.player)
+
+                # update fog of war in game
+                self.fog_of_war_in_game()
 
                 # show items on screen
                 self.item_group.update()
@@ -190,10 +206,16 @@ class Main:
                 # show minimap
                 self.draw_in_game_minimap()
 
+                # update fog of war
+                self.update_fog_of_war_in_inventory()
+
+                # show fps counter
+                self.draw_fps()
+
                 # show hp and xp on the screen
                 if self.player.death_animation is False and self.player.alive is False:
                     self.game_active = False
-                if self.game_active and self.player.current_hp >= 0:
+                if self.game_active and self.player.stats["health"] >= 0:
                     self.display_hp()
                     self.display_xp()
                     self.display_skills()
@@ -216,8 +238,9 @@ class Main:
                     self.display_death_screen()
 
             if self.game_start:
-                self.display_background()
-                self.start_animation()
+                self.map.update(self.player)
+                if self.map.room_group.counter >= steps_count + 7:
+                    self.start_animation()
 
             # show custom cursor on screen
             mouse_pos = pygame.mouse.get_pos()
@@ -251,12 +274,8 @@ class Main:
     # display level up announcement
     def display_level_up(self):
         if self.current_time - self.skill_announcement_timer < 5000:
-            level_text = bigger_font.render('LEVEL ' + str(self.player_lv), True, 'Black')
-            skill_text = font.render('+1 SKILL POINT', True, 'Black')
-            level_text_width = level_text.get_width()/2
-            skill_text_width = skill_text.get_width()/2
-            self.draw_text(bigger_font, 'LEVEL ' + str(self.player_lv), 'Black', self.skill_announcement_transparency, (WIDTH / 2 - level_text_width, 10))
-            self.draw_text(font, '+1 SKILL POINT', 'Black', self.skill_announcement_transparency, (WIDTH / 2 - skill_text_width, 80))
+            self.draw_text(bigger_font, 'LEVEL ' + str(self.player_lv), black_color, self.skill_announcement_transparency, (WIDTH / 2, 10), True)
+            self.draw_text(font, '+1 SKILL POINT', black_color, self.skill_announcement_transparency, (WIDTH / 2, 80), True)
             self.skill_announcement_transparency -= 1
         else:
             if self.player.level % 5 != 0:
@@ -265,13 +284,13 @@ class Main:
 
     # HP definition
     def display_hp(self):
-        if self.player.current_hp >= self.player.max_hp:
-            self.player.current_hp = self.player.max_hp
-        hp_ratio = self.player.current_hp / self.player.max_hp
+        if self.player.stats["health"] >= self.player.stats["max_hp"]:
+            self.player.stats["health"] = self.player.stats["max_hp"]
+        hp_ratio = self.player.stats["health"] / self.player.stats["max_hp"]
         self.draw_surface([510, 45], 'Black', (20, 20))
         self.draw_surface([500, 35], 'Grey', (25, 25))
         self.draw_surface([500 * hp_ratio, 35], 'Red', (25, 25))
-        self.draw_text(font, 'HP', 'Black', 255, (30, 25))
+        self.draw_text(font, 'HP', black_color, 255, (30, 25), False)
 
     # XP definition
     def display_xp(self):
@@ -283,8 +302,8 @@ class Main:
         self.draw_surface([510, 45], 'Black', (1390, 20))
         self.draw_surface([500, 35], 'Grey', (1395, 25))
         self.draw_surface([500 * xp_ratio, 35], 'Blue', (1395, 25))
-        self.draw_text(font, 'LEVEL', 'Black', 255, (1785, 25))
-        self.draw_text(font, str(self.player.level), 'Black', 255, (1402, 25))
+        self.draw_text(font, 'LEVEL', black_color, 255, (1785, 25), False)
+        self.draw_text(font, str(self.player.level), black_color, 255, (1402, 25), False)
 
     # display skills on screen
     def display_skills(self):
@@ -300,7 +319,7 @@ class Main:
         if self.current_time - self.skill6_timer > self.player.character.skill6_cooldown:
             self.skill6_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
         self.skill_cooldown(self.player.character.skill9.added_skill_point1, (415, 955), self.skill9_polygon_points, self.skill9_timer,
-                            self.player.character.skill9_cooldown, self.player.character.skill9_duration, self.player.character.in_game_skill9)
+                            self.player.character.skill9_cooldown, None, self.player.character.in_game_skill9)
         if self.current_time - self.skill9_timer > self.player.character.skill9_cooldown:
             self.skill9_polygon_points = [(50, 0), (100, 0), (100, 100), (0, 100), (0, 0), (50, 0), (50, 50)]
         self.skill_cooldown(self.player.character.skill12.added_skill_point1, (545, 955), self.skill12_polygon_points, self.skill12_timer,
@@ -315,7 +334,7 @@ class Main:
             screen.blit(icon, position)
             if self.current_time - timer < cooldown:
                 skill_polygon_surface.fill((0, 0, 0, 0))
-                ratio = 6650 / cooldown
+                ratio = 6700 / cooldown
                 if 50 <= points[0][0] < 100 and points[0][1] == 0:
                     points[0] = (points[0][0] + ratio, points[0][1])
                     if points[0][0] > 100:
@@ -338,18 +357,15 @@ class Main:
                         points.remove(points[1])
                 elif 0 <= points[0][0] < 50 and points[0][1] == 0:
                     points[0] = (points[0][0] + ratio, points[0][1])
+                    if points[0][0] > 50:
+                        points.remove(points[1])
                 if cooldown - (self.current_time - timer) > 1000:
-                    cooldown_text = skill_font.render(str(int((cooldown - (self.current_time - timer)) / 1000)), True, 'Black')
-                    cooldown_text_width = cooldown_text.get_width()/2
-                    cooldown_text_height = cooldown_text.get_height()/2
-                    self.draw_text(skill_font, str(int((cooldown - (self.current_time - timer)) / 1000)), 'Black', 200, (position[0]+50-cooldown_text_width, position[1]+50-cooldown_text_height))
+                    self.draw_text(skill_font, str(int((cooldown - (self.current_time - timer)) / 1000)), black_color, 200, (position[0]+50, position[1]+50-22), True)
                 else:
-                    cooldown_text = skill_font.render(str(round(((cooldown - (self.current_time - timer)) / 1000), 1)), True, 'Black')
-                    cooldown_text_width = cooldown_text.get_width() / 2
-                    cooldown_text_height = cooldown_text.get_height() / 2
-                    self.draw_text(skill_font, str(round(((cooldown - (self.current_time - timer)) / 1000), 1)), 'Black', 200, (position[0]+50-cooldown_text_width, position[1]+50-cooldown_text_height))
-                pygame.draw.polygon(skill_polygon_surface, (30, 30, 30, 120), points)
-                screen.blit(skill_polygon_surface, position)
+                    self.draw_text(skill_font, str(round(((cooldown - (self.current_time - timer)) / 1000), 1)), black_color, 200, (position[0]+50, position[1]+50-22), True)
+                if len(points) > 2:
+                    pygame.draw.polygon(skill_polygon_surface, (30, 30, 30, 120), points)
+                    screen.blit(skill_polygon_surface, position)
                 if duration is not None:
                     if self.current_time - timer < duration:
                         duration_ratio = 1 - ((self.current_time - timer) / duration)
@@ -390,7 +406,7 @@ class Main:
         if self.controls_button.draw(screen) and self.clicked is False:
             self.clicked = True
         if self.quit_button.draw(screen) and self.clicked is False:
-            menu = Menu(True)
+            menu = Menu(True, self.fps_counter)
             menu.run(running=True, menu_state='main')
             self.clicked = True
         if self.pause_screen_transparency > 0:
@@ -403,20 +419,18 @@ class Main:
     def display_inventory_screen(self):
         self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        screen.blit(self.player.character.image_right_scaled, (105, 55))
-        pause_lv = bigger_font.render(f'Level:{self.player.level}', True, 'Black')
-        pause_lv_width = pause_lv.get_width()
+        screen.blit(self.player.character.icon_inventory, (155, 105))
         screen.blit(health, (105, 440))
         screen.blit(attack_damage, (105, 525))
         screen.blit(armor, (105, 610))
         screen.blit(movement_speed, (105, 695))
         screen.blit(gold, (105, 780))
-        self.draw_text(bigger_font, f'Level:{self.player.level}', 'Black', 255, (115 + (300 - pause_lv_width) / 2, 350))
-        self.draw_text(font, f'{round(self.player.current_hp, 1)}/{round(self.player.max_hp, 1)}', 'Black', 255, (205, 475))
-        self.draw_text(font, f'{round(self.player.attack, 1)}', 'Black', 255, (205, 560))
-        self.draw_text(font, f'{self.player.armor}', 'Black', 255, (205, 645))
-        self.draw_text(font, f'{self.player.speed}', 'Black', 255, (205, 730))
-        self.draw_text(font, f'{self.player.gold}', 'Black', 255, (205, 815))
+        self.draw_text(bigger_font, f'Level:{self.player.level}', black_color, 255, (265, 350), True)
+        self.draw_text(font, f'{round(self.player.stats["health"], 1)}/{round(self.player.stats["max_hp"], 1)}', black_color, 255, (205, 475), False)
+        self.draw_text(font, f'{round(self.player.stats["attack"], 1)}', black_color, 255, (205, 560), False)
+        self.draw_text(font, f'{self.player.stats["armor"]}', black_color, 255, (205, 645), False)
+        self.draw_text(font, f'{self.player.stats["speed"]}', black_color, 255, (205, 730), False)
+        self.draw_text(font, f'{self.player.gold}', black_color, 255, (205, 815), False)
         self.draw_inventory_minimap()
         if self.skill_button.draw(screen) and self.clicked is False:
             self.inventory_screen = False
@@ -432,37 +446,51 @@ class Main:
         else:
             grey_pause_screen.set_alpha(self.pause_screen_transparency)
 
+    # update fog of war on minimap
+    def update_fog_of_war_in_inventory(self):
+        self.player_minimap_x = int((self.player.rect.centerx - self.map.room_group.minimap_shift[0] + self.map.room_group.minimap_shift_x) * self.map.room_group.inventory_minimap_scale)
+        self.player_minimap_y = int((self.player.rect.centery - self.map.room_group.minimap_shift[1] + self.map.room_group.minimap_shift_y) * self.map.room_group.inventory_minimap_scale)
+        pygame.draw.circle(self.inventory_fog_of_war, (0, 0, 0), (self.player_minimap_x, self.player_minimap_y), 120)
+
     # display inventory minimap
     def draw_inventory_minimap(self):
-        inventory_minimap_surface.blit(inventory_minimap_background, (0, 0))
-        player_minimap_x = int((self.player.rect.centerx + 4040) * inventory_minimap_scale_x)
-        player_minimap_y = int((self.player.rect.centery + 4460) * inventory_minimap_scale_y)
+        inventory_minimap_surface.fill((50, 50, 50))
+        fog_of_war_mask = pygame.mask.from_surface(self.inventory_fog_of_war).to_surface()
+        temp_area = self.map.room_group.inventory_minimap_area.copy()
+        temp_area.blit(fog_of_war_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        self.inventory_minimap_area = temp_area.copy()
+        inventory_minimap_surface.blit(self.inventory_minimap_area, (0, 0))
         for sprite in self.enemy_group.sprites():
-            enemy_minimap_x = int((sprite.rect.centerx + 4040) * inventory_minimap_scale_x)
-            enemy_minimap_y = int((sprite.rect.centery + 4460) * inventory_minimap_scale_y)
+            enemy_minimap_x = int((sprite.rect.centerx - self.map.room_group.minimap_shift[0] + self.map.room_group.minimap_shift_x) * self.map.room_group.inventory_minimap_scale)
+            enemy_minimap_y = int((sprite.rect.centery - self.map.room_group.minimap_shift[1] + self.map.room_group.minimap_shift_y) * self.map.room_group.inventory_minimap_scale)
             pygame.draw.circle(inventory_minimap_surface, enemy_color, (enemy_minimap_x, enemy_minimap_y), 4)
         for sprite in self.item_group.sprites():
-            item_minimap_x = int((sprite.rect.centerx + 4040) * inventory_minimap_scale_x)
-            item_minimap_y = int((sprite.rect.centery + 4460) * inventory_minimap_scale_y)
+            item_minimap_x = int((sprite.rect.centerx - self.map.room_group.minimap_shift[0] + self.map.room_group.minimap_shift_x) * self.map.room_group.inventory_minimap_scale)
+            item_minimap_y = int((sprite.rect.centery - self.map.room_group.minimap_shift[1] + self.map.room_group.minimap_shift_y) * self.map.room_group.inventory_minimap_scale)
             pygame.draw.circle(inventory_minimap_surface, item_color, (item_minimap_x, item_minimap_y), 4)
-        pygame.draw.circle(inventory_minimap_surface, player_color, (player_minimap_x, player_minimap_y), 4)
-        camera_rect = pygame.Rect(player_minimap_x - (960 * inventory_minimap_scale_x), player_minimap_y - (540 * inventory_minimap_scale_y), (1920 * inventory_minimap_scale_x) + 4, (1080 * inventory_minimap_scale_y) + 4)
+        pygame.draw.circle(inventory_minimap_surface, player_color, (self.player_minimap_x, self.player_minimap_y), 4)
+        camera_rect = pygame.Rect(self.player_minimap_x - (960 * self.map.room_group.inventory_minimap_scale), self.player_minimap_y - (540 * self.map.room_group.inventory_minimap_scale), (1920 * self.map.room_group.inventory_minimap_scale), (1080 * self.map.room_group.inventory_minimap_scale))
         pygame.draw.rect(inventory_minimap_surface, (0, 0, 0, 0), camera_rect, width=2)
         pygame.draw.rect(inventory_minimap_surface, (0, 0, 0, 0), (0, 0, INV_MINIMAP_WIDTH, INV_MINIMAP_HEIGHT), width=5)
-        screen.blit(inventory_minimap_surface, (475, 55))
+        temp_area = inventory_minimap_surface.copy()
+        temp_area.blit(fog_of_war_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(temp_area, (475, 55))
 
     # display in-game minimap
     def draw_in_game_minimap(self):
-        self.background_offset.x = (self.player.rect.centerx - self.background_half_width) * in_game_minimap_scale_x
-        self.background_offset.y = (self.player.rect.centery - self.background_half_height) * in_game_minimap_scale_y
-        in_game_minimap_surface.blit(in_game_minimap_background, ((0 - 375 - self.background_offset.x), (0 - 375 - self.background_offset.y)))
+        self.background_offset.x = (self.player.rect.centerx - self.background_half_width) * self.map.room_group.in_game_minimap_scale
+        self.background_offset.y = (self.player.rect.centery - self.background_half_height) * self.map.room_group.in_game_minimap_scale
+        shift_x = (self.map.room_group.area_rect.x - self.map.room_group.minimap_shift_x - self.background_half_width) * self.map.room_group.in_game_minimap_scale
+        shift_y = (self.map.room_group.area_rect.y - self.map.room_group.minimap_shift_y - self.background_half_height) * self.map.room_group.in_game_minimap_scale
+        in_game_minimap_surface.fill((50, 50, 50))
+        in_game_minimap_surface.blit(self.map.room_group.in_game_minimap_area, (125 + shift_x - self.background_offset.x, 125 + shift_y - self.background_offset.y))
         for sprite in self.enemy_group.sprites():
-            enemy_minimap_x = int((sprite.rect.x + 350) * in_game_minimap_scale_x) - self.background_offset.x
-            enemy_minimap_y = int((sprite.rect.y + 750) * in_game_minimap_scale_y) - self.background_offset.y
+            enemy_minimap_x = int(sprite.rect.centerx * self.map.room_group.in_game_minimap_scale) - self.background_offset.x
+            enemy_minimap_y = int((sprite.rect.centery + 420) * self.map.room_group.in_game_minimap_scale) - self.background_offset.y
             pygame.draw.circle(in_game_minimap_surface, enemy_color, (enemy_minimap_x, enemy_minimap_y), 4)
         for sprite in self.item_group.sprites():
-            item_minimap_x = int((sprite.rect.x + 350) * in_game_minimap_scale_x) - self.background_offset.x
-            item_minimap_y = int((sprite.rect.y + 750) * in_game_minimap_scale_y) - self.background_offset.y
+            item_minimap_x = int(sprite.rect.centerx * self.map.room_group.in_game_minimap_scale) - self.background_offset.x
+            item_minimap_y = int((sprite.rect.centery + 420) * self.map.room_group.in_game_minimap_scale) - self.background_offset.y
             pygame.draw.circle(in_game_minimap_surface, item_color, (item_minimap_x, item_minimap_y), 4)
         pygame.draw.circle(in_game_minimap_surface, player_color, (IN_GAME_MINIMAP_WIDTH/2, IN_GAME_MINIMAP_HEIGHT/2), 4)
         pygame.draw.rect(in_game_minimap_surface, (0, 0, 0, 0), (0, 0, IN_GAME_MINIMAP_WIDTH, IN_GAME_MINIMAP_HEIGHT), width=5)
@@ -472,7 +500,7 @@ class Main:
     def display_skill_tree(self):
         self.pause_screen_transparency -= 2
         screen.blit(self.blurred_current_state_image, screen_rect)
-        self.draw_text(font, f'{self.player.skill_points} skill points', 'Purple', 255, (1475, 700))
+        self.draw_text(font, f'{self.player.skill_points} skill points', 'Purple', 255, (1475, 700), False)
         for x in range(3):
             for y in range(3):
                 screen.blit(arrow_right, (x*355+305, y*355+140))
@@ -494,53 +522,64 @@ class Main:
     def display_death_screen(self):
         from menu import Menu
         screen.fill('Grey')
-        death_text = bigger_font.render('YOU DIED', True, 'Black')
-        death_text_width = death_text.get_width()
-        death_level = font.render(f'Level:{self.player.level}', True, 'Black')
-        death_level_width = death_level.get_width()
-        self.draw_text(bigger_font, 'YOU DIED', 'Black', 255, (960 - death_text_width / 2, 700))
-        self.draw_text(font, f'Level:{self.player.level}', 'Black', 255, (960 - death_level_width / 2, 810))
+        self.draw_text(bigger_font, 'YOU DIED', black_color, 255, (960, 700), True)
+        self.draw_text(font, f'Level:{self.player.level}', black_color, 255, (960, 810), True)
         screen.blit(self.player.character.image_death_scaled, (810, 350))
         if self.quit_button.draw(screen) and self.clicked is False:
-            menu = Menu(True)
+            menu = Menu(True, self.fps_counter)
             menu.run(running=True, menu_state='main')
             self.clicked = True
 
-    # background definition
-    def display_background(self):
-        self.background_offset.x = self.player.rect.centerx - self.background_half_width
-        self.background_offset.y = self.player.rect.centery - self.background_half_height
-        offset_pos = [-4040, -4460] - self.background_offset + self.player.camera
-        screen.blit(arena_background, offset_pos)
-
     # random enemy spawns
     def enemy_spawn(self):
-        cords = [[self.player.rect.left - 1310, randint(self.player.rect.top - 850, self.player.rect.bottom + 810)],
-                 [self.player.rect.right + 1210, randint(self.player.rect.top - 850, self.player.rect.bottom + 810)],
-                 [randint(self.player.rect.left - 1310, self.player.rect.right + 1210), self.player.rect.top - 850],
-                 [randint(self.player.rect.left - 1310, self.player.rect.right + 1210), self.player.rect.bottom + 810]]
-        chosen_cords = random.choice(cords)
-        if randint(0, 9) >= 3:
-            RedEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player, self.red_enemy_stats)
-            self.red_enemy_stats["health"] += 1
-            self.red_enemy_stats["attack"] += 0.01
-            self.red_enemy_stats["armor"] += 1
-        else:
-            GreenEnemy(chosen_cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player, self.green_enemy_stats)
-            self.green_enemy_stats["health"] += 1
-            self.green_enemy_stats["attack"] += 1
-            self.green_enemy_stats["armor"] += 1
+        for sprite in self.map.room_group.sprites():
+            if sprite.main and not sprite.spawn_point:
+                for i in range(randint(3, 5)):
+                    cords = (randint(-200, 200) + sprite.rect.centerx, randint(-200, 200) + sprite.rect.centery)
+                    if randint(0, 9) >= 3:
+                        RedEnemy(cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player, self.red_enemy_stats)
+                    else:
+                        GreenEnemy(cords, self.enemy_group, self.dead_enemy_group, self.attack_group, self.item_group, self.player, self.green_enemy_stats)
 
     # show start animation
     def start_animation(self):
         self.start_current_sprite += 0.1
         if self.start_current_sprite >= len(self.start_sprites):
+            self.enemy_spawn()
             self.game_start = False
             self.game_active = True
         else:
             self.start_image = self.start_sprites[int(self.start_current_sprite)]
             self.start_rect = self.start_image.get_rect().move(860, 440)
         screen.blit(self.start_image, self.start_rect)
+
+    # draw fps counter
+    def draw_fps(self):
+        if self.fps_counter:
+            elapsed_time = time.time() - self.fps_timer
+            self.fps_count += 1
+            if elapsed_time >= 1:
+                self.fps = self.fps_count / elapsed_time
+                self.fps_count = 0
+                self.fps_timer = time.time()
+            self.draw_text(fps_font, f'FPS: {round(self.fps)}', white_color, 255, (1855, 0), False)
+
+    # prepare fog of war surface
+    def prepare_fog_of_war(self):
+        for x in range(0, WIDTH + 600):
+            for y in range(0, HEIGHT+600):
+                distance = math.sqrt((x - 1260) ** 2 + (y - 840) ** 2)
+                if distance <= fog_radius:
+                    alpha = 0
+                elif distance <= fog_radius + fog_distance:
+                    alpha = int((distance - fog_radius) / fog_distance * 255)
+                else:
+                    alpha = 255
+                self.fog_surface.set_at((x, y), (15, 15, 15, alpha))
+
+    # draw fog of war in game
+    def fog_of_war_in_game(self):
+        screen.blit(self.fog_surface, (self.player.camera[0] - 300, self.player.camera[1] - 300))
 
     # draw surface on screen
     @staticmethod
@@ -551,10 +590,14 @@ class Main:
 
     # draw text on screen
     @staticmethod
-    def draw_text(text_font, text, color, transparency, position):
+    def draw_text(text_font, text, color, transparency, position, center):
         img = text_font.render(text, True, color)
         img.set_alpha(transparency)
-        screen.blit(img, position)
+        if center:
+            img_width = img.get_width() / 2
+            screen.blit(img, (position[0] - img_width, position[1]))
+        else:
+            screen.blit(img, position)
 
     # greyscale definition
     @staticmethod

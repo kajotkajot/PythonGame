@@ -6,7 +6,7 @@ class Angel:
     def __init__(self, player, skill_group):
         self.image = angel_right
         self.image_right = angel_right
-        self.image_right_scaled = angel_right_scaled
+        self.icon_inventory = angel_icon_inventory
         self.image_death = angel_death
         self.image_death_scaled = angel_death_scaled
         self.player_left_stand_sprites = angel_left_stand_sprites

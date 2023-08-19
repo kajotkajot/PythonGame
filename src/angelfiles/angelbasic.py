@@ -11,7 +11,7 @@ class AngelBasic(pygame.sprite.Sprite):
         self.current_sprite = 0
         self.image = self.animation_right_sprites[0]
         self.rect = self.image.get_rect().move(self.player.rect.x, self.player.rect.y)
-        self.damage = self.player.attack
+        self.damage = self.player.stats["attack"]
         self.player.basic_attack_animation = True
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -43,7 +43,7 @@ class AngelBasic(pygame.sprite.Sprite):
         for enemy in self.enemy_group:
             if self.rect.colliderect(enemy.rect):
                 if self.mask.overlap(enemy.mask, (enemy.rect.x - self.rect.x, enemy.rect.y - self.rect.y)):
-                    enemy.hp -= self.damage*(1-((enemy.armor*self.player.armor_reduction)/((enemy.armor*self.player.armor_reduction)+99)))
+                    enemy.stats["health"] -= self.damage*(1-((enemy.stats["armor"]*self.player.stats["armor_reduction"])/((enemy.stats["armor"]*self.player.stats["armor_reduction"])+99)))
 
     def update(self):
         self.check_orientation()

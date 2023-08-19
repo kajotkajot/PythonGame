@@ -1,6 +1,12 @@
 import math
+import numpy as np
 from settings import *
 from assets import *
+from random import randint
+from scipy.spatial import Delaunay
+from scipy.spatial.distance import euclidean
+from room import Room
+from loadingscreen import LoadingScreen
 
 
 class PlayerGroup(pygame.sprite.GroupSingle):
@@ -25,6 +31,7 @@ class PlayerGroup(pygame.sprite.GroupSingle):
                 self.ghost_offset_pos.x = offset_pos.x + 50
                 self.ghost_offset_pos.y = offset_pos.y + 50
             if sprite.alive is False and sprite.death_animation:
+                self.ghost_offset_pos.x = offset_pos.x + 50
                 self.ghost_offset_pos.y -= 1
                 self.display.blit(sprite.ghost_image, self.ghost_offset_pos)
             if sprite.basic_attack_animation is False and sprite.channeling is False and sprite.resurrect_animation is False:
@@ -62,16 +69,16 @@ class EnemyGroup(pygame.sprite.Group):
         if distance != 0:
             dx /= distance*20
             dy /= distance*20
-        relative_velocity_x = other_sprite.speed * dx - sprite.speed * dx
-        relative_velocity_y = other_sprite.speed * dy - sprite.speed * dy
+        relative_velocity_x = other_sprite.stats["speed"] * dx - sprite.stats["speed"] * dx
+        relative_velocity_y = other_sprite.stats["speed"] * dy - sprite.stats["speed"] * dy
         bounce_factor = 0.0005
         impulse_magnitude = bounce_factor * (-(1 + sprite.restitution) * relative_velocity_x * relative_velocity_y) / (sprite.mass + other_sprite.mass)
-        sprite.speed -= impulse_magnitude * sprite.mass * dx
-        sprite.rect.x += dx * sprite.speed
-        sprite.rect.y += dy * sprite.speed
-        other_sprite.speed += impulse_magnitude * other_sprite.mass * dx
-        other_sprite.rect.x += dx * other_sprite.speed
-        other_sprite.rect.y += dy * other_sprite.speed
+        sprite.stats["speed"] -= impulse_magnitude * sprite.mass * dx
+        sprite.rect.x += dx * sprite.stats["speed"]
+        sprite.rect.y += dy * sprite.stats["speed"]
+        other_sprite.stats["speed"] += impulse_magnitude * other_sprite.mass * dx
+        other_sprite.rect.x += dx * other_sprite.stats["speed"]
+        other_sprite.rect.y += dy * other_sprite.stats["speed"]
 
     def custom_draw(self, player):
         self.center_target_camera(player)
@@ -84,15 +91,16 @@ class EnemyGroup(pygame.sprite.Group):
                 if other_sprite != sprite:
                     if sprite.hit_box.colliderect(other_sprite.hit_box):
                         self.handle_enemy_collision(sprite, other_sprite)
-            hp_ratio = sprite.hp / sprite.max_hp
+            hp_ratio = sprite.stats["health"] / sprite.stats["max_hp"]
             hp_bar = pygame.Surface([(abs(sprite.rect.left - sprite.rect.right) - 10) * hp_ratio, 5])
             hp_bar_under = pygame.Surface([abs(sprite.rect.left - sprite.rect.right) - 10, 5])
             hp_bar.fill("red")
             hp_bar_under.fill("black")
             offset_pos = sprite.rect.topleft - self.offset + player.camera
-            self.display.blit(hp_bar_under, (offset_pos.x + 5, offset_pos.y - 15))
-            self.display.blit(hp_bar, (offset_pos.x + 5, offset_pos.y - 15))
-            self.display.blit(sprite.image, offset_pos)
+            if abs(player.rect.centerx - sprite.rect.centerx) < 1200 and abs(player.rect.centery - sprite.rect.centery) < 800:
+                self.display.blit(hp_bar_under, (offset_pos.x + 5, offset_pos.y - 15))
+                self.display.blit(hp_bar, (offset_pos.x + 5, offset_pos.y - 15))
+                self.display.blit(sprite.image, offset_pos)
             sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
@@ -177,7 +185,8 @@ class ItemGroup(pygame.sprite.Group):
             shadow_offset_pos = sprite.origin.topleft - self.offset + player.camera
             if sprite.attracted is False:
                 self.display.blit(sprite.shadow, shadow_offset_pos)
-            self.display.blit(sprite.image, offset_pos)
+            if abs(player.rect.centerx - sprite.rect.centerx) < 1200 and abs(player.rect.centery - sprite.rect.centery) < 800:
+                self.display.blit(sprite.image, offset_pos)
             sprite.mask = pygame.mask.from_surface(sprite.image)
 
 
@@ -224,7 +233,7 @@ class SkillGroup(pygame.sprite.Group):
                 lines_of_text = self.wrap_text(sprite.description, font, 400)
                 y_pos = 135
                 for line in lines_of_text:
-                    text_to_surface = font.render(line, True, "black")
+                    text_to_surface = font.render(line, True, black_color)
                     screen.blit(text_to_surface, (1450, y_pos))
                     height = text_to_surface.get_height() + 5
                     y_pos += height
@@ -270,3 +279,238 @@ class SkillGroup(pygame.sprite.Group):
                                 other_sprite.skill_availability_bool = True
             if pygame.mouse.get_pressed()[0] == 0:
                 sprite.clicked = False
+
+
+class RoomGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display = pygame.display.get_surface()
+        self.offset = pygame.math.Vector2()
+        self.starting_offset = pygame.math.Vector2()
+        self.half_width = self.display.get_size()[0] / 2
+        self.half_height = self.display.get_size()[1] / 2
+        self.center_points = [(0, 0) for _ in range(main_count)]
+        self.counter = 0
+        self.mst = None
+        self.points_array = None
+        self.edges = None
+        self.square_positions = []
+        self.area = None
+        self.temp_area = None
+        self.area_rect = None
+        self.area_mask = None
+        self.in_game_minimap_area = None
+        self.in_game_minimap_scale = None
+        self.inventory_minimap_area = None
+        self.inventory_minimap_scale = None
+        self.temp_minimap_area = None
+        self.minimap_shift = None
+        self.minimap_shift_x = None
+        self.minimap_shift_y = None
+        self.loading_screen = LoadingScreen()
+
+    def center_target_camera(self, target):
+        self.offset.x = target.rect.centerx - self.half_width
+        self.offset.y = target.rect.centery - self.half_height
+
+    def create_map(self):
+        if self.counter < steps_count:
+            self.steering_behaviour()
+        elif self.counter == steps_count:
+            self.inflate()
+        elif self.counter == steps_count + 1:
+            self.add_edges()
+        elif self.counter == steps_count + 2:
+            self.draw_corridors()
+        elif self.counter == steps_count + 3:
+            self.remove_squares()
+        elif self.counter == steps_count + 4:
+            self.find_area_size()
+        elif self.counter == steps_count + 5:
+            self.draw_texture()
+        elif self.counter == steps_count + 6:
+            self.choose_starting_room()
+        elif self.counter == steps_count + 7:
+            self.prepare_minimap_info()
+
+    def steering_behaviour(self):
+        for sprite in self.sprites():
+            separation_force = pygame.Vector2(0, 0)
+            for another_sprite in self.sprites():
+                if sprite != another_sprite and sprite.rect.colliderect(another_sprite.rect):
+                    distance = sprite.position.distance_to(another_sprite.position)
+                    diff = sprite.position - another_sprite.position
+                    if diff[0] != 0 and diff[1] != 0:
+                        diff = diff.normalize() / distance
+                    separation_force += diff
+                    if separation_force.length() > 0:
+                        separation_force = separation_force.normalize() * 2
+                        sprite.velocity += separation_force
+                    sprite.position += sprite.velocity
+                    sprite.rect.center = sprite.position
+            if sprite.main:
+                self.center_points[sprite.id] = sprite.rect.center
+        self.delaunay_triangulation()
+
+    def delaunay_triangulation(self):
+        self.points_array = np.array(self.center_points)
+        triangulation = Delaunay(self.points_array)
+        self.edges = []
+        for simplex in triangulation.simplices:
+            for i in range(3):
+                u, v = simplex[i], simplex[(i + 1) % 3]
+                dist = euclidean(self.points_array[u], self.points_array[v])
+                self.edges.append((u, v, dist))
+        num_vertices = len(self.center_points)
+        self.mst = self.kruskal_mst(self.edges, num_vertices)
+        self.counter += 1
+
+    @staticmethod
+    def kruskal_mst(edges, num_vertices):
+        edges = sorted(edges, key=lambda z: z[2])
+        parent = list(range(num_vertices))
+        mst = []
+
+        def find_root(node):
+            while parent[node] != node:
+                node = parent[node]
+            return node
+
+        for u, v, weight in edges:
+            root_u = find_root(u)
+            root_v = find_root(v)
+            if root_u != root_v:
+                mst.append((u, v, weight))
+                parent[root_u] = root_v
+
+        return mst
+
+    def inflate(self):
+        for sprite in self.sprites():
+            sprite.width = sprite.width * 1.5
+            sprite.height = sprite.height * 1.5
+            sprite.image = pygame.Surface([sprite.width, sprite.height])
+            sprite.rect = sprite.image.get_rect().move(sprite.rect.x, sprite.rect.y)
+        self.counter += 1
+
+    def add_edges(self):
+        result_list = [y for y in self.edges if y not in self.mst]
+        for i in range(int(len(result_list) * 0.15)):
+            num = randint(0, int(len(result_list)) - 1)
+            self.mst.append(result_list[num])
+            result_list.remove(result_list[num])
+        self.counter += 1
+
+    def draw_corridors(self):
+        lines = []
+        for u, v, _ in self.mst:
+            if randint(0, 1) == 0:
+                lines.append((self.points_array[u], (self.points_array[u][0], self.points_array[v][1])))
+                lines.append((self.points_array[v], (self.points_array[u][0], self.points_array[v][1])))
+            else:
+                lines.append((self.points_array[u], (self.points_array[v][0], self.points_array[u][1])))
+                lines.append((self.points_array[v], (self.points_array[v][0], self.points_array[u][1])))
+        for line in lines:
+            for sprite in self.sprites():
+                clipped_line = sprite.rect.clipline(line)
+                if clipped_line:
+                    if not sprite.main:
+                        sprite.corridor = True
+            if abs(line[0][0]-line[1][0]) == 0:
+                area = Room(self, corridor_size, abs(line[0][1] - line[1][1]) + corridor_size, False, True, False, None)
+                self.move_corridor(area, line)
+            elif abs(line[0][1]-line[1][1]) == 0:
+                area = Room(self, abs(line[0][0] - line[1][0]) + corridor_size, corridor_size, False, True, False, None)
+                self.move_corridor(area, line)
+        self.counter += 1
+
+    @staticmethod
+    def move_corridor(area, line):
+        if line[0][0] < line[1][0]:
+            if line[0][1] < line[1][1]:
+                area.rect = area.image.get_rect().move((line[0][0], line[0][1]))
+            else:
+                area.rect = area.image.get_rect().move((line[0][0], line[1][1]))
+        else:
+            if line[0][1] < line[1][1]:
+                area.rect = area.image.get_rect().move((line[1][0], line[0][1]))
+            else:
+                area.rect = area.image.get_rect().move((line[1][0], line[1][1]))
+
+    def remove_squares(self):
+        for sprite in self.sprites():
+            if not sprite.main and not sprite.corridor:
+                self.remove(sprite)
+        self.counter += 1
+
+    def find_area_size(self):
+        for sprite in self.sprites():
+            self.square_positions.append((sprite.rect.x, sprite.rect.y))
+        left = min(x for x, _ in self.square_positions)
+        top = min(x for _, x in self.square_positions)
+        right = max(x for x, _ in self.square_positions)
+        bottom = max(x for _, x in self.square_positions)
+        self.temp_area = pygame.Surface([right - left + stddev, bottom - top + stddev], pygame.SRCALPHA)
+        self.temp_area.fill((0, 0, 0, 0))
+        self.area_rect = self.temp_area.get_rect().move((left, top))
+        for sprite in self.sprites():
+            self.temp_area.blit(sprite.image, (sprite.rect.x - left, sprite.rect.y - top))
+        self.area_mask = pygame.mask.from_surface(self.temp_area).to_surface()
+        self.temp_area.set_colorkey((0, 0, 0))
+        self.counter += 1
+
+    def draw_texture(self):
+        for x in range(0, self.temp_area.get_width(), floor_texture.get_width()):
+            for y in range(0, self.temp_area.get_height(), floor_texture.get_height()):
+                self.temp_area.blit(floor_texture, (x, y))
+        self.temp_area.blit(self.area_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        self.area = self.temp_area.copy()
+        self.counter += 1
+
+    def choose_starting_room(self):
+        random_room = randint(0, len(self.center_points) - 1)
+        for sprite in self.sprites():
+            if sprite.main and sprite.id == random_room:
+                sprite.spawn_point = True
+                random_point = sprite.rect.center
+                self.starting_offset = (960 - random_point[0], 540 - random_point[1])
+        self.area_rect.x += self.starting_offset[0]
+        self.area_rect.y += self.starting_offset[1]
+        for sprite in self.sprites():
+            sprite.rect.x += self.starting_offset[0]
+            sprite.rect.y += self.starting_offset[1]
+        self.minimap_shift = self.area_rect
+        self.counter += 1
+
+    def prepare_minimap_info(self):
+        area_width = self.area.get_width()
+        area_height = self.area.get_height()
+        if area_width >= area_height:
+            self.minimap_shift_x = 0
+            self.minimap_shift_y = (area_width - area_height) / 2
+            self.temp_minimap_area = pygame.Surface((area_width, area_width))
+            self.temp_minimap_area.blit(self.area, (0, 0 + self.minimap_shift_y))
+            self.inventory_minimap_scale = INV_MINIMAP_WIDTH / area_width
+            self.in_game_minimap_scale = 1000 / area_width
+        else:
+            self.minimap_shift_x = (area_height - area_width) / 2
+            self.minimap_shift_y = 0
+            self.temp_minimap_area = pygame.Surface((area_height, area_height))
+            self.temp_minimap_area.blit(self.area, (0 + self.minimap_shift_x, 0))
+            self.inventory_minimap_scale = INV_MINIMAP_HEIGHT / area_height
+            self.in_game_minimap_scale = 1000 / area_height
+        self.temp_minimap_area.set_colorkey((0, 0, 0))
+        self.inventory_minimap_area = self.temp_minimap_area.copy()
+        self.inventory_minimap_area = pygame.transform.scale(self.inventory_minimap_area, (970, 970))
+        self.in_game_minimap_area = self.temp_minimap_area.copy()
+        self.in_game_minimap_area = pygame.transform.scale(self.in_game_minimap_area, (1000, 1000))
+        self.counter += 1
+
+    def custom_draw(self, player):
+        if self.area is None:
+            self.loading_screen.run()
+        else:
+            self.display.fill((50, 50, 50))
+            self.center_target_camera(player)
+            offset_pos = self.area_rect.topleft - self.offset + player.camera
+            screen.blit(self.area, offset_pos)

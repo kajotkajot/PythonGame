@@ -11,43 +11,42 @@ from spritegroups import SkillGroup
 class Player(pygame.sprite.Sprite):
     def __init__(self, group, character, passive_group, attack_group, enemy_group):
         super().__init__(group)
-        self.direction = pygame.math.Vector2()
-        self.current_death_sprite = 0
-        self.current_sprite = 0
-        self.current_orientation = "right"
+        # stats
+        self.needed_player_xp = needed_player_xp
         self.xp = player_xp
-        self.level = level
+        self.skill_points = player_skill_points
         self.gold = player_gold
-        self.max_hp = angel_stats["health"]
-        self.current_hp = angel_stats["health"]
-        self.speed = angel_stats["speed"]
-        self.armor = angel_stats["armor"]
-        self.attack = angel_stats["attack"]
-        self.damage_bounce = 0
-        self.armor_reduction = 1
-        self.damage_reduction = 1
-        self.regeneration = 0
-        self.resurrections = 0
-        self.resurrection_value = 0
+        self.level = level
+        self.stats = {key: value for key, value in angel_stats.items()}
+        self.camera_speed = self.stats["speed"] / 5
+        self.camera_range = self.stats["speed"] * 10
+
+        # important variables
+        self.basic_attack_animation = False
+        self.resurrect_animation = False
         self.explosion_on_death = False
+        self.death_animation = False
+        self.channeling = False
+        self.can_fly = False
+        self.alive = True
+
+        # vectors
+        self.direction = pygame.math.Vector2()
         self.camera = pygame.math.Vector2(0, 0)
         self.current_camera_position = pygame.math.Vector2(0, 0)
-        self.camera_speed = self.speed/5
-        self.camera_range = self.speed*10
+
+        # values
+        self.current_death_sprite = 0
+        self.current_sprite = 0
         self.ghost_timer = 0
         self.ghost_transparency = 0
         self.ghost_current_sprite = 0
+        self.current_orientation = "right"
         self.ghost_image = ghost_sprites[0]
-        self.alive = True
-        self.death_animation = False
-        self.skill_points = player_skill_points
         self.skill_group = SkillGroup()
         self.skill_group.empty()
-        self.basic_attack_animation = False
-        self.resurrect_animation = False
-        self.channeling = False
-        self.can_fly = False
-        self.needed_player_xp = needed_player_xp
+
+        # individual character
         if character == 'Knight':
             self.image = knight_right
             self.image_right = knight_right
@@ -142,13 +141,13 @@ class Player(pygame.sprite.Sprite):
             self.current_orientation = "left"
 
     def animation_right(self):
-        self.current_sprite += 0.01 * self.speed
+        self.current_sprite += 0.01 * self.stats["speed"]
         if self.current_sprite >= len(self.character.player_right_sprites):
             self.current_sprite = 0
         self.character.image = self.character.player_right_sprites[int(self.current_sprite)]
 
     def animation_left(self):
-        self.current_sprite += 0.01 * self.speed
+        self.current_sprite += 0.01 * self.stats["speed"]
         if self.current_sprite >= len(self.character.player_left_sprites):
             self.current_sprite = 0
         self.character.image = self.character.player_left_sprites[int(self.current_sprite)]
@@ -185,8 +184,8 @@ class Player(pygame.sprite.Sprite):
             self.ghost_animation()
 
     def player_alive(self):
-        if self.current_hp <= 0 and self.resurrections == 0:
-            self.current_hp = 0
+        if self.stats["health"] <= 0 and self.stats["resurrections"] == 0:
+            self.stats["health"] = 0
             self.death_animation = True
             self.death_check()
             self.alive = False
@@ -247,9 +246,7 @@ class Player(pygame.sprite.Sprite):
             if self.direction.x != 0 and self.direction.y != 0:
                 self.direction.x /= math.sqrt(2)
                 self.direction.y /= math.sqrt(2)
-            new_pos = self.rect.center + self.direction * self.speed
-            if math.hypot(new_pos.x - boundary_center[0], new_pos.y - boundary_center[1]) <= boundary_radius:
-                self.rect.center += self.direction * self.speed
+            self.rect.center += self.direction * self.stats["speed"]
         else:
             self.handle_camera(0, self.camera.y, False)
             self.handle_camera(self.camera.x, 0, False)

@@ -6,7 +6,7 @@ from button import Button
 
 
 class Menu:
-    def __init__(self, clicked):
+    def __init__(self, clicked, fps):
         # main menu buttons
         self.start_button = Button('START', 585, 650, button_750x100_image, button_750x100_image_pressed)
         self.settings_button = Button('SETTINGS', 585, 780, button_750x100_image, button_750x100_image_pressed)
@@ -14,8 +14,10 @@ class Menu:
         self.exit_button = Button('EXIT', 975, 910, button_360x100_image, button_360x100_image_pressed)
 
         # settings buttons
-        self.resolution1920x1080_button = Button('1920x1080', 585, 650, button_750x100_image, button_750x100_image_pressed)
-        self.resolution1280x720_button = Button('1280x720', 585, 780, button_750x100_image, button_750x100_image_pressed)
+        self.resolution1920x1080_button = Button('1920x1080', 585, 520, button_750x100_image, button_750x100_image_pressed)
+        self.resolution1280x720_button = Button('1280x720', 585, 650, button_750x100_image, button_750x100_image_pressed)
+        self.fps_button_on = Button('FPS: ON', 585, 780, button_750x100_image, button_750x100_image_pressed)
+        self.fps_button_off = Button('FPS: OFF', 585, 780, button_750x100_image, button_750x100_image_pressed)
         self.settings_back_button = Button('BACK', 585, 910, button_750x100_image, button_750x100_image_pressed)
 
         # character choice buttons
@@ -44,7 +46,8 @@ class Menu:
         self.arena_x = -4040
         self.arena_y = -4460
         self.background_timer = 0
-        self.random_direction = 0
+        self.random_direction = randint(0, 360)
+        self.fps_counter = fps
 
     def run(self, running, menu_state):
         while running:
@@ -62,7 +65,7 @@ class Menu:
                             self.character_menu_position -= 1
                             self.character_choice('left')
 
-            self.moving_background()
+            screen.fill((50, 50, 50))
 
             if menu_state == 'main':
                 if self.start_button.draw(screen) and self.clicked is False:
@@ -86,6 +89,15 @@ class Menu:
                 if self.resolution1920x1080_button.draw(screen) and self.clicked is False:
                     self.clicked = True
 
+                if self.fps_counter:
+                    if self.fps_button_on.draw(screen) and self.clicked is False:
+                        self.fps_counter = False
+                        self.clicked = True
+                else:
+                    if self.fps_button_off.draw(screen) and self.clicked is False:
+                        self.fps_counter = True
+                        self.clicked = True
+
                 if self.settings_back_button.draw(screen) and self.clicked is False:
                     menu_state = 'main'
                     self.clicked = True
@@ -107,7 +119,7 @@ class Menu:
                     self.angel_button.image_not_pressed = self.angel_button.saved_image_pressed
                     self.chose_made = True
                     self.clicked = True
-                screen.blit(angel_right_menu, (self.characters_image_positions[1], 135))
+                screen.blit(angel_icon_menu, (self.characters_image_positions[1], 135))
 
                 if self.assassin_button.draw(screen) and self.clicked is False:
                     self.chosen_character = 'Assassin'
@@ -159,7 +171,7 @@ class Menu:
 
                 if self.play_button.draw(screen) and self.clicked is False and self.chose_made is True:
                     from main import Main
-                    main = Main(self.chosen_character)
+                    main = Main(self.chosen_character, self.fps_counter)
                     main.run()
                     self.clicked = True
 
@@ -199,65 +211,41 @@ class Menu:
     def character_info(self, character):
         if self.chose_made:
             if character == 'Knight':
-                screen.blit(bigger_font.render(str(knight_stats["health"]), True, 'Black'), (800, 635))
-                screen.blit(bigger_font.render(str(knight_stats["attack"]), True, 'Black'), (800, 720))
-                screen.blit(bigger_font.render(str(knight_stats["armor"]), True, 'Black'), (1070, 635))
-                screen.blit(bigger_font.render(str(knight_stats["speed"]), True, 'Black'), (1070, 720))
+                screen.blit(bigger_font.render(str(knight_stats["health"]), True, black_color), (800, 635))
+                screen.blit(bigger_font.render(str(knight_stats["attack"]), True, black_color), (800, 720))
+                screen.blit(bigger_font.render(str(knight_stats["armor"]), True, black_color), (1070, 635))
+                screen.blit(bigger_font.render(str(knight_stats["speed"]), True, black_color), (1070, 720))
             if character == 'Angel':
-                screen.blit(bigger_font.render(str(angel_stats["health"]), True, 'Black'), (800, 635))
-                screen.blit(bigger_font.render(str(angel_stats["attack"]), True, 'Black'), (800, 720))
-                screen.blit(bigger_font.render(str(angel_stats["armor"]), True, 'Black'), (1070, 635))
-                screen.blit(bigger_font.render(str(angel_stats["speed"]), True, 'Black'), (1070, 720))
+                screen.blit(bigger_font.render(str(angel_stats["health"]), True, black_color), (800, 635))
+                screen.blit(bigger_font.render(str(angel_stats["attack"]), True, black_color), (800, 720))
+                screen.blit(bigger_font.render(str(angel_stats["armor"]), True, black_color), (1070, 635))
+                screen.blit(bigger_font.render(str(angel_stats["speed"]), True, black_color), (1070, 720))
             if character == 'Assassin':
-                screen.blit(bigger_font.render(str(assassin_stats["health"]), True, 'Black'), (800, 635))
-                screen.blit(bigger_font.render(str(assassin_stats["attack"]), True, 'Black'), (800, 720))
-                screen.blit(bigger_font.render(str(assassin_stats["armor"]), True, 'Black'), (1070, 635))
-                screen.blit(bigger_font.render(str(assassin_stats["speed"]), True, 'Black'), (1070, 720))
+                screen.blit(bigger_font.render(str(assassin_stats["health"]), True, black_color), (800, 635))
+                screen.blit(bigger_font.render(str(assassin_stats["attack"]), True, black_color), (800, 720))
+                screen.blit(bigger_font.render(str(assassin_stats["armor"]), True, black_color), (1070, 635))
+                screen.blit(bigger_font.render(str(assassin_stats["speed"]), True, black_color), (1070, 720))
             if character == 'Mage':
-                screen.blit(bigger_font.render(str(mage_stats["health"]), True, 'Black'), (800, 635))
-                screen.blit(bigger_font.render(str(mage_stats["attack"]), True, 'Black'), (800, 720))
-                screen.blit(bigger_font.render(str(mage_stats["armor"]), True, 'Black'), (1070, 635))
-                screen.blit(bigger_font.render(str(mage_stats["speed"]), True, 'Black'), (1070, 720))
+                screen.blit(bigger_font.render(str(mage_stats["health"]), True, black_color), (800, 635))
+                screen.blit(bigger_font.render(str(mage_stats["attack"]), True, black_color), (800, 720))
+                screen.blit(bigger_font.render(str(mage_stats["armor"]), True, black_color), (1070, 635))
+                screen.blit(bigger_font.render(str(mage_stats["speed"]), True, black_color), (1070, 720))
             if character == 'Necromancer':
-                screen.blit(bigger_font.render(str(necromancer_stats["health"]), True, 'Black'), (800, 635))
-                screen.blit(bigger_font.render(str(necromancer_stats["attack"]), True, 'Black'), (800, 720))
-                screen.blit(bigger_font.render(str(necromancer_stats["armor"]), True, 'Black'), (1070, 635))
-                screen.blit(bigger_font.render(str(necromancer_stats["speed"]), True, 'Black'), (1070, 720))
+                screen.blit(bigger_font.render(str(necromancer_stats["health"]), True, black_color), (800, 635))
+                screen.blit(bigger_font.render(str(necromancer_stats["attack"]), True, black_color), (800, 720))
+                screen.blit(bigger_font.render(str(necromancer_stats["armor"]), True, black_color), (1070, 635))
+                screen.blit(bigger_font.render(str(necromancer_stats["speed"]), True, black_color), (1070, 720))
             if character == 'Swordsman':
-                screen.blit(bigger_font.render(str(swordsman_stats["health"]), True, 'Black'), (800, 635))
-                screen.blit(bigger_font.render(str(swordsman_stats["attack"]), True, 'Black'), (800, 720))
-                screen.blit(bigger_font.render(str(swordsman_stats["armor"]), True, 'Black'), (1070, 635))
-                screen.blit(bigger_font.render(str(swordsman_stats["speed"]), True, 'Black'), (1070, 720))
+                screen.blit(bigger_font.render(str(swordsman_stats["health"]), True, black_color), (800, 635))
+                screen.blit(bigger_font.render(str(swordsman_stats["attack"]), True, black_color), (800, 720))
+                screen.blit(bigger_font.render(str(swordsman_stats["armor"]), True, black_color), (1070, 635))
+                screen.blit(bigger_font.render(str(swordsman_stats["speed"]), True, black_color), (1070, 720))
             screen.blit(health, (690, 615))
             screen.blit(attack_damage, (690, 700))
             screen.blit(armor, (960, 615))
             screen.blit(movement_speed, (960, 700))
 
-    def moving_background(self):
-        if -8080 < self.arena_x < 0 and -8920 < self.arena_y < 0:
-            if self.background_timer < 500:
-                self.background_timer += 1
-                if self.random_direction == 0:
-                    self.arena_x += 0.5
-                    self.arena_y += 0.5
-                if self.random_direction == 1:
-                    self.arena_x += 0.5
-                    self.arena_y -= 0.5
-                if self.random_direction == 2:
-                    self.arena_x -= 0.5
-                    self.arena_y -= 0.5
-                if self.random_direction == 3:
-                    self.arena_x -= 0.5
-                    self.arena_y += 0.5
-            else:
-                self.random_direction = randint(0, 3)
-                self.background_timer = 0
-        else:
-            self.arena_x = -4040
-            self.arena_y = -4460
-        screen.blit(arena_background, (self.arena_x, self.arena_y))
-
 
 if __name__ == '__main__':
-    menu = Menu(False)
+    menu = Menu(False, True)
     menu.run(running=True, menu_state='main')

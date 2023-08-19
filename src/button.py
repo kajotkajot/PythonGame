@@ -1,5 +1,5 @@
 import pygame
-from settings import menu_font
+from settings import menu_font, black_color
 
 
 class Button:
@@ -9,7 +9,7 @@ class Button:
         self.saved_image_pressed = image_pressed
         self.image_not_pressed = image
         self.image_pressed = image_pressed
-        self.text = menu_font.render(text, True, 'Black')
+        self.text = menu_font.render(text, True, black_color)
         self.text_width = menu_font.size(text)[0]/2
         self.text_height = menu_font.size(text)[1]/2
         self.rect = self.current_image.get_rect()

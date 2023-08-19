@@ -7,7 +7,7 @@ class AngelSkill9(pygame.sprite.Sprite):
         self.player = player
         self.enemy_group = enemy_group
         self.timer = timer
-        self.damage = self.player.attack * self.player.character.skill9.current_value
+        self.damage = self.player.stats["attack"] * self.player.character.skill9.current_value
         self.current_sprite = 0
         self.current_time = pygame.time.get_ticks()
         self.animation_left_sprites = self.player.character.player_left_explosion_sprites
@@ -60,7 +60,7 @@ class AngelSkill9(pygame.sprite.Sprite):
         for enemy in self.enemy_group:
             if self.rect.colliderect(enemy.rect):
                 if self.mask.overlap(enemy.mask, (enemy.rect.x - self.rect.x, enemy.rect.y - self.rect.y)):
-                    enemy.hp -= self.damage*(1-((enemy.armor*self.player.armor_reduction)/((enemy.armor*self.player.armor_reduction)+99)))
+                    enemy.stats["health"] -= self.damage*(1-((enemy.stats["armor"]*self.player.stats["armor_reduction"])/((enemy.stats["armor"]*self.player.stats["armor_reduction"])+99)))
 
     def update(self):
         self.check_orientation()

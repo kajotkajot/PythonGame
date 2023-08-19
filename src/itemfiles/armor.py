@@ -48,7 +48,7 @@ class Armor(pygame.sprite.Sprite):
         if self.rect.colliderect(self.player.rect) and self.player.alive:
             if self.mask.overlap(self.player.mask, (self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)):
                 self.kill()
-                self.player.armor += self.value
+                self.player.stats["armor"] += self.value
 
     def update(self):
         self.collision()
